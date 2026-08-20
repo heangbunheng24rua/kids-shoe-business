@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">\n<meta http-equiv="Pragma" content="no-cache">
 <title>Kids Shoe Business Manager V5 Cloud</title>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f6fa;color:#172033}
@@ -56,7 +56,9 @@ form{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:1
 <script>
 const SUPABASE_URL="https://geqgidwztkqagrpdftfv.supabase.co";
 const SUPABASE_KEY="sb_publishable_CN88NtaxuT-GEYbmWNK2LA_u3Rz9SWL";
-const client=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const client=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{
+  auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}
+});
 let db={models:[],stockIn:[],sales:[],adjustments:[]}, editImage=null, pendingCreateImage='';
 const today=()=>new Date().toISOString().slice(0,10), money=n=>'$'+Number(n||0).toFixed(2);
 const toast=t=>{let x=document.getElementById('toast');x.textContent=t;x.style.display='block';setTimeout(()=>x.style.display='none',1800)};
@@ -66,24 +68,41 @@ function imageReader(input,cb){let f=input.files[0];if(!f){cb(null);return}let r
 document.getElementById('createImage').onchange=function(){imageReader(this,x=>{pendingCreateImage=x||'';let p=document.getElementById('createPreview');p.src=x||'';p.style.display=x?'block':'none'})};
 function buildSizePicker(){document.getElementById('createSizePicks').innerHTML=Array.from({length:25},(_,i)=>String(i+21)).map(s=>`<label class="size-pick"><input type="checkbox" name="createSize" value="${s}"> ${s}</label>`).join('')}
 buildSizePicker();
+async function cloudQuery(makeQuery,label,tries=3){
+  let last=null;
+  for(let attempt=1;attempt<=tries;attempt++){
+    try{
+      const result=await Promise.race([
+        makeQuery(),
+        new Promise((_,reject)=>setTimeout(()=>reject(new Error(label+' timed out. Check your internet connection.')),15000))
+      ]);
+      if(result.error)throw result.error;
+      return result;
+    }catch(e){
+      last=e;
+      if(attempt<tries)await new Promise(r=>setTimeout(r,700*attempt));
+    }
+  }
+  throw new Error(label+': '+(last?.message||String(last)));
+}
 async function refreshAll(){
- const [mm,ss,si,sii,sa,sai,co,cio]=await Promise.all([
-   client.from('shoe_models').select('*').order('model_code'),
-   client.from('shoe_sizes').select('*'),
-   client.from('stock_in').select('*').order('transaction_date',{ascending:false}),
-   client.from('stock_in_items').select('*'),
-   client.from('sales').select('*').order('sale_date',{ascending:false}),
-   client.from('sale_items').select('*'),
-   client.from('stock_corrections').select('*').order('correction_date',{ascending:false}),
-   client.from('stock_correction_items').select('*')
- ]);
- const err=[mm,ss,si,sii,sa,sai,co,cio].find(x=>x.error);if(err)throw err.error;
- const models=mm.data.map(m=>({...m,sizes:ss.data.filter(z=>z.model_id===m.id)}));
- db={models,stockIn:si.data.map(x=>({...x,rows:sii.data.filter(i=>i.stock_in_id===x.id)})),sales:sa.data.map(x=>({...x,rows:sai.data.filter(i=>i.sale_id===x.id)})),adjustments:co.data.map(x=>({...x,rows:cio.data.filter(i=>i.correction_id===x.id)}))};
- renderAll();
- document.getElementById('status').textContent='☁️ Cloud connected';
- document.getElementById('cloudInfo').innerHTML='<b>Connected.</b> Data is being read from Supabase. Use the same website on your phone/iPad to see the same inventory.';
- document.getElementById('loading').style.display='none';
+  document.getElementById('status').textContent='☁️ Connecting…';
+  const [mm,ss,si,sii,sa,sai,co,cio]=await Promise.all([
+    cloudQuery(()=>client.from('shoe_models').select('*').order('model_code'),'Models'),
+    cloudQuery(()=>client.from('shoe_sizes').select('*'),'Sizes'),
+    cloudQuery(()=>client.from('stock_in').select('*').order('transaction_date',{ascending:false}),'Stock in'),
+    cloudQuery(()=>client.from('stock_in_items').select('*'),'Stock-in items'),
+    cloudQuery(()=>client.from('sales').select('*').order('sale_date',{ascending:false}),'Sales'),
+    cloudQuery(()=>client.from('sale_items').select('*'),'Sale items'),
+    cloudQuery(()=>client.from('stock_corrections').select('*').order('correction_date',{ascending:false}),'Corrections'),
+    cloudQuery(()=>client.from('stock_correction_items').select('*'),'Correction items')
+  ]);
+  const models=mm.data.map(m=>({...m,sizes:ss.data.filter(z=>z.model_id===m.id)}));
+  db={models,stockIn:si.data.map(x=>({...x,rows:sii.data.filter(i=>i.stock_in_id===x.id)})),sales:sa.data.map(x=>({...x,rows:sai.data.filter(i=>i.sale_id===x.id)})),adjustments:co.data.map(x=>({...x,rows:cio.data.filter(i=>i.correction_id===x.id)}))};
+  renderAll();
+  document.getElementById('status').textContent='☁️ Cloud connected';
+  document.getElementById('cloudInfo').innerHTML='<b>Connected.</b> Data is being read from Supabase. Your PC, phone and iPad use the same cloud inventory.';
+  document.getElementById('loading').style.display='none';
 }
 function stockStatus(m,z){return z.current_stock===0?'out':z.current_stock<=m.minimum_stock?'low':'ok'}
 function stockLabel(m,z){return z.current_stock===0?'Out':z.current_stock<=m.minimum_stock?'Low':'OK'}
@@ -108,6 +127,10 @@ function reports(){let rev=0,profit=0,mo={};db.sales.forEach(x=>{let m=model(x.m
 function backupCloud(){download('kids_shoe_cloud_backup.json',JSON.stringify(db,null,2),'application/json')}function download(n,t,type){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type}));a.download=n;a.click()}
 function renderAll(){options();renderModels();renderIn();renderSale();renderAdjust();histories();dashboard();reports()}
 document.querySelectorAll('input[type=date]').forEach(x=>x.value=today());
-refreshAll().catch(e=>{document.getElementById('loading').textContent='Connection error: '+e.message;document.getElementById('status').textContent='❌ Error';});
+refreshAll().catch(e=>{
+  const msg='Connection error: '+(e?.message||String(e));
+  document.getElementById('loading').innerHTML='<div style="text-align:center;padding:24px;max-width:520px"><div style="font-size:18px;color:#991b1b;margin-bottom:10px">❌ '+msg.replace(/</g,'&lt;')+'</div><div style="color:#64748b;margin-bottom:14px">Please check Wi‑Fi/mobile data, then try again.</div><button class="primary" onclick="location.reload()">↻ Retry</button></div>';
+  document.getElementById('status').textContent='❌ Connection error';
+});
 </script>
 </body></html>
