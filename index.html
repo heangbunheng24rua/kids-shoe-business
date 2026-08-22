@@ -76,7 +76,7 @@ table{width:100%;border-collapse:collapse;margin-top:14px}th,td{padding:9px;bord
 <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
 <h2 style="margin-right:auto">Model List</h2>
 <input id="search" placeholder="Search model/code/color" oninput="renderModels()">
-<button id="deleteTest001Btn" class="danger" type="button" onclick="deleteTest001()" style="display:none">🗑️ Delete test 001</button>
+
 </div>
 <div class="table-wrap"><table><thead><tr><th>Image</th><th>Code</th><th>Model</th><th>Color</th><th>Cost</th><th>Sell</th><th>Min</th><th>Sizes</th><th>Action</th></tr></thead><tbody id="modelsTable"></tbody></table></div></div>
 </section>
@@ -326,44 +326,8 @@ function imageHtml(v){
   return `<img class="model-image" src="${esc(src)}" alt="Shoe image" onload="this.nextElementSibling.style.display='none'" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="image-fallback">👟</span>`;
 }
 
-async function deleteTest001(){
-  const m = models.find(x => String(x.model_code).trim() === '001');
-  if(!m){
-    alert('Model 001 was not found.');
-    return;
-  }
-
-  const ok = confirm(
-    'Delete test model 001?\n\n' +
-    'This will remove the model and its configured shoe sizes.\n' +
-    'It will NOT automatically delete stock/sales history.'
-  );
-  if(!ok) return;
-
-  try{
-    // Remove the model's size definitions first.
-    const sz = await db.from('shoe_sizes').delete().eq('model_id',m.id);
-    if(sz.error) throw sz.error;
-
-    const md = await db.from('shoe_models').delete().eq('id',m.id);
-    if(md.error) throw md.error;
-
-    msg('✅ Test model 001 deleted');
-    await load();
-  }catch(err){
-    console.error(err);
-    alert(
-      'Could not delete model 001.\n\n' +
-      'Supabase says:\n' + (err.message || err) +
-      '\n\nIf this model has stock/sales history, do not force-delete it. ' +
-      'Send me this error and I will make the safe history cleanup.'
-    );
-  }
-}
 
 function renderModels(){
-  const testBtn=document.getElementById('deleteTest001Btn');
-  if(testBtn) testBtn.style.display=models.some(x=>String(x.model_code).trim()==='001')?'inline-block':'none';
   let q=(search.value||'').toLowerCase();
   modelsTable.innerHTML=models.filter(m=>[m.model_code,m.model_name,m.color].join(' ').toLowerCase().includes(q)).map(m=>`<tr><td><div class="image-cell">${imageHtml(m.image_url)}</div></td><td>${esc(m.model_code)}</td><td>${esc(m.model_name)}</td><td>${esc(m.color)}</td><td>$${(+m.cost_price||0).toFixed(2)}</td><td>$${(+m.selling_price||0).toFixed(2)}</td><td>${m.minimum_stock}</td><td>${ms(m.id).join(', ')}</td><td><div class="actions"><button class="secondary" onclick="editModel('${m.id}')">Edit</button><button class="secondary" onclick="copyModel('${m.id}')">Copy</button><button class="secondary" onclick="manageSizes('${m.id}')">Sizes</button><button class="danger" onclick="delModel('${m.id}')">Delete</button></div></td></tr>`).join('')||'<tr><td colspan="9" class="empty">No models yet.</td></tr>';
 }
