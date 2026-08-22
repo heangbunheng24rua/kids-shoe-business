@@ -105,7 +105,7 @@ table{width:100%;border-collapse:collapse;margin-top:14px}th,td{padding:9px;bord
 <div id="editModal" class="modal"><div class="modal-card"><h2>Edit Model</h2><form id="editForm"><input id="editId" type="hidden"><label>Code<input id="editCode" required></label><label>Name<input id="editName" required></label><label>Color<input id="editColor"></label><label>Cost<input id="editCost" type="number" step=".01"></label><label>Selling<input id="editPrice" type="number" step=".01"></label><label>Minimum<input id="editMin" type="number"></label><label>Change Image<input id="editImage" type="file" accept="image/*"></label><div style="grid-column:1/-1"><label>Sizes</label><div id="editSizes" class="size-grid"></div></div><button class="primary">Save Changes</button><button class="secondary" type="button" onclick="closeEdit()">Cancel</button></form></div></div>
 
 <script>
-const SUPABASE_URL='https://iwhayhorchwcfcqlkdri.supabase.co';
+const SUPABASE_URL = "https://iwhayhorchwcfcqlkdri.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_VG-IfE2aD-N3Q24dg2OrIQ_QLX5cXPd';
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 let models=[],sizes=[],stock=[],sales=[],corrections=[];
