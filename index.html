@@ -27,6 +27,12 @@ table{width:100%;border-collapse:collapse;margin-top:14px}th,td{padding:9px;bord
 .table-wrap{overflow:auto}.size-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(65px,1fr));gap:8px;margin-top:8px}
 .size-box{display:flex;align-items:center;justify-content:center;gap:4px;border:1px solid #cbd5e1;border-radius:8px;padding:8px;background:#fff;cursor:pointer}
 .size-box input{width:auto;margin:0}.size-box:has(input:checked){background:#eaf7f0;border-color:#22c55e}
+.create-size-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-top:8px}
+.create-size-box{border:1px solid #cbd5e1;border-radius:9px;padding:8px;background:#fff}
+.create-size-top{display:flex;align-items:center;gap:6px;font-weight:800}
+.create-size-top input[type=checkbox]{width:auto;margin:0}
+.create-size-qty{width:100%;margin-top:6px;padding:7px;border:1px solid #cbd5e1;border-radius:7px;box-sizing:border-box}
+.create-size-qty:disabled{background:#f1f5f9;color:#94a3b8}
 .actions{display:flex;gap:5px;flex-wrap:wrap}.model-image{width:62px;height:62px;object-fit:cover;border-radius:9px;border:1px solid #ddd}.image-cell{width:70px;height:62px;display:flex;align-items:center}.image-fallback{width:62px;height:62px;border:1px solid #ddd;border-radius:9px;display:none;align-items:center;justify-content:center;font-size:25px;background:#f8fafc}
  .preview{width:180px;height:180px;object-fit:cover;border-radius:9px;border:1px solid #ddd;margin-top:8px;display:block}
 .empty{text-align:center;color:#64748b;padding:28px}.history-table{width:100%;border-collapse:separate;border-spacing:0;margin-top:10px}.history-table th,.history-table td{padding:9px;border-bottom:1px solid #e5e7eb;font-size:14px}.history-table th{background:#f8fafc}.history-group{border:1px solid #e2e8f0;border-radius:12px;margin:12px 0;overflow:hidden;background:#fff}.history-head{padding:13px 15px;background:#f8fafc;display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}.history-title{font-weight:800;font-size:16px}.history-meta{color:#64748b;font-size:13px;margin-top:4px}.size-chips{display:flex;gap:7px;flex-wrap:wrap;padding:12px 15px}.size-chip{border:1px solid #cbd5e1;border-radius:8px;padding:7px 10px;background:#fff;font-weight:700}.size-chip b{color:#172033}.history-total{font-weight:800;padding:12px 15px;border-top:1px solid #e5e7eb;text-align:right}.stock-toolbar{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:18px}.stock-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px}.stock-model-card{border:1px solid #e2e8f0;border-radius:14px;background:#fff;overflow:hidden}.stock-model-head{display:flex;gap:12px;align-items:center;padding:14px;background:#f8fafc;border-bottom:1px solid #e2e8f0}.stock-model-img,.stock-model-fallback{width:72px;height:72px;flex:0 0 72px;border-radius:10px;border:1px solid #ddd;object-fit:cover}.stock-model-fallback{display:flex;align-items:center;justify-content:center;font-size:30px;background:#f1f5f9}.stock-model-title{font-weight:800;font-size:17px}.stock-model-sub{color:#64748b;font-size:13px;margin-top:3px}.stock-size-list{padding:12px 14px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.stock-size-row{display:grid;grid-template-columns:1fr 88px;align-items:center;gap:8px;border:1px solid #e2e8f0;border-radius:9px;padding:7px 9px;background:#fff}.stock-size-label{font-weight:700}.stock-current{display:block;color:#64748b;font-size:11px;font-weight:400}.stock-size-row input{margin:0;padding:8px}.stock-model-actions{padding:12px 14px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;gap:8px}.stock-total{font-weight:800}.stock-save{width:auto}.stock-empty{grid-column:1/-1}.status{font-weight:700;font-size:13px}.ok{color:#86efac}.bad{color:#fecaca}
@@ -69,7 +75,12 @@ table{width:100%;border-collapse:collapse;margin-top:14px}th,td{padding:9px;bord
 <label>Selling Price<input id="price" type="number" step=".01" min="0" value="0"></label>
 <label>Minimum Stock / Size<input id="min" type="number" min="0" value="2"></label>
 <label>Image<input id="image" type="file" accept="image/*"><span id="imageBox"></span></label>
-<div style="grid-column:1/-1"><label>Select Initial Sizes</label><div id="createSizes" class="size-grid"></div></div>
+<div style="grid-column:1/-1">
+<label>Select Sizes & Initial Quantity</label>
+<div class="notice" style="margin:6px 0 10px">Tick a size, then enter how many pairs you already have. For example: Size 21 = 5 pairs, Size 22 = 4 pairs.</div>
+<div id="createSizes" class="create-size-grid"></div>
+<div style="margin-top:10px;font-weight:800">Initial stock total: <span id="createInitialTotal">0</span> pairs</div>
+</div>
 <div><button id="createModelBtn" class="primary" type="button" onclick="createModel()">+ Create Model</button> <button class="secondary" type="button" onclick="resetModel()">Clear</button></div>
 </form></div>
 <div class="panel">
@@ -78,7 +89,7 @@ table{width:100%;border-collapse:collapse;margin-top:14px}th,td{padding:9px;bord
 <input id="search" placeholder="Search model/code/color" oninput="renderModels()">
 
 </div>
-<div class="table-wrap"><table><thead><tr><th>Image</th><th>Code</th><th>Model</th><th>Color</th><th>Cost</th><th>Sell</th><th>Min</th><th>Sizes</th><th>Action</th></tr></thead><tbody id="modelsTable"></tbody></table></div></div>
+<div class="table-wrap"><table><thead><tr><th>Image</th><th>Code</th><th>Model</th><th>Color</th><th>Cost</th><th>Sell</th><th>Min</th><th>Sizes / Stock</th><th>Action</th></tr></thead><tbody id="modelsTable"></tbody></table></div></div>
 </section>
 
 <section id="stock" class="page">
@@ -128,9 +139,35 @@ document.querySelectorAll('input[type=date]').forEach(x=>x.value=today);
 function page(id,b){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));if(b)b.classList.add('active');if(id==='stock'){renderStockCards();renderStock();}if(id==='sales')renderSales();if(id==='correction')renderCorrection();if(id==='reports')renderReports()}
 function msg(t){let x=document.getElementById('toast');x.textContent=t;x.style.display='block';setTimeout(()=>x.style.display='none',2200)}
 function esc(v){return String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#039;")}
-function grid(id,sel=[]){let q=document.getElementById(id),set=new Set(sel.map(Number));q.innerHTML=S.map(n=>`<label class="size-box"><input type="checkbox" value="${n}" ${set.has(n)?'checked':''}>${n}</label>`).join('')}
+function grid(id,sel=[]){
+  let q=document.getElementById(id),set=new Set(sel.map(Number));
+  q.innerHTML=S.map(n=>`<label class="size-box"><input type="checkbox" value="${n}" ${set.has(n)?'checked':''}>${n}</label>`).join('');
+}
+function createSizeGrid(){
+  const q=document.getElementById('createSizes');
+  if(!q)return;
+  q.innerHTML=S.map(n=>`<div class="create-size-box">
+    <div class="create-size-top"><input type="checkbox" class="create-size-check" value="${n}"><span>Size ${n}</span></div>
+    <input class="create-size-qty" data-size="${n}" type="number" min="0" step="1" value="0" placeholder="Pairs" disabled>
+  </div>`).join('');
+  q.querySelectorAll('.create-size-check').forEach(cb=>cb.addEventListener('change',()=>{
+    const qty=q.querySelector(`.create-size-qty[data-size="${cb.value}"]`);
+    qty.disabled=!cb.checked;
+    if(!cb.checked)qty.value=0;
+    updateCreateInitialTotal();
+  }));
+  q.querySelectorAll('.create-size-qty').forEach(inp=>inp.addEventListener('input',updateCreateInitialTotal));
+  updateCreateInitialTotal();
+}
+function selectedCreateSizes(){return [...document.querySelectorAll('#createSizes .create-size-check:checked')].map(x=>Number(x.value));}
+function initialCreateStockRows(){return [...document.querySelectorAll('#createSizes .create-size-check:checked')].map(cb=>{
+  const inp=document.querySelector(`#createSizes .create-size-qty[data-size="${cb.value}"]`);
+  return {size:Number(cb.value),quantity:Math.max(0,Number(inp?.value)||0)};
+}).filter(x=>x.quantity>0)}
+function updateCreateInitialTotal(){const total=initialCreateStockRows().reduce((a,x)=>a+x.quantity,0);const el=document.getElementById('createInitialTotal');if(el)el.textContent=total;}
 function checked(id){return [...document.querySelectorAll('#'+id+' input:checked')].map(x=>+x.value)}
 function ms(id){return sizes.filter(x=>x.model_id===id).map(x=>+x.size).sort((a,b)=>a-b)}
+function modelStockSummary(id){return ms(id).map(n=>{const r=stock.find(x=>String(x.model_id)===String(id)&&Number(x.size)===Number(n));return `${n}: ${Number(r?.current_stock ?? r?.quantity ?? 0)}`}).join(', ')}
 function setStatus(t,good){let x=document.getElementById('status');x.textContent=t;x.className='status '+(good?'ok':'bad')}
 
 async function load(){
@@ -156,27 +193,92 @@ function fillSelects(){
 }
 function currentQty(modelId,size){return Number(stock.find(x=>x.model_id===modelId&&Number(x.size)===Number(size))?.current_stock||0)}
 function stockImageHtml(url,cls='stock-model-img'){
-  if(!url)return '<div class="stock-model-fallback">👟</div>';
-  return `<img class="${cls}" src="${esc(url)}" alt="Shoe image" onerror="this.outerHTML='<div class=\"stock-model-fallback\">👟</div>'">`;
+  const src=imageSrc(url);
+  if(!src)return '<div class="stock-model-fallback">👟</div>';
+  return `<div style="position:relative;width:72px;height:72px;flex:0 0 72px">
+    <img class="${cls}" src="${esc(src)}" alt="Shoe image"
+      style="width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid #ddd;display:block"
+      onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+    <div class="stock-model-fallback" style="display:none;position:absolute;inset:0">👟</div>
+  </div>`;
 }
 function renderStockCards(){
   const box=document.getElementById('stockCards');
   if(!box)return;
+
   const q=(document.getElementById('stockSearch')?.value||'').trim().toLowerCase();
   const list=models.filter(m=>!q||[m.model_code,m.model_name,m.color].join(' ').toLowerCase().includes(q));
-  if(!list.length){box.innerHTML='<div class="empty stock-empty">No shoe models found.</div>';return}
+
+  if(!list.length){
+    box.innerHTML='<div class="empty stock-empty">No shoe models found.</div>';
+    return;
+  }
+
   box.innerHTML=list.map(m=>{
-    const z=sizes.filter(x=>x.model_id===m.id).map(x=>Number(x.size)).sort((a,b)=>a-b);
-    return `<div class="stock-model-card" data-model-id="${m.id}">
+    const z=sizes
+      .filter(x=>String(x.model_id)===String(m.id))
+      .map(x=>Number(x.size))
+      .sort((a,b)=>a-b);
+
+    return `<div class="stock-model-card" data-model-id="${esc(m.id)}">
       <div class="stock-model-head">
         ${stockImageHtml(m.image_url)}
-        <div><div class="stock-model-title">${esc(m.model_code)} — ${esc(m.model_name)}</div><div class="stock-model-sub">${esc(m.color||'')} • Current stock shown below</div></div>
+        <div>
+          <div class="stock-model-title">${esc(m.model_code)} — ${esc(m.model_name)}</div>
+          <div class="stock-model-sub">${esc(m.color||'')} • Current stock shown below</div>
+        </div>
       </div>
-      <div class="stock-size-list">${z.map(n=>`<label class="stock-size-row"><span class="stock-size-label">Size ${n}<small class="stock-current">Current: ${currentQty(m.id,n)}</small></span><input class="stock-card-qty" data-size="${n}" type="number" min="0" step="1" value="0"></label>`).join('')||'<div class="empty">No sizes configured.</div>'}</div>
-      <div class="stock-model-actions"><span class="stock-total">Total entered: <b class="stock-entered-total">0</b> pairs</span><button class="primary stock-save" type="button" onclick="saveModelStock(\'${m.id}\')">Save ${esc(m.model_code)}</button></div>
+
+      <div class="stock-size-list">
+        ${z.map(n=>`
+          <label class="stock-size-row">
+            <span class="stock-size-label">
+              Size ${n}
+              <small class="stock-current">Current: ${currentQty(m.id,n)}</small>
+            </span>
+            <input class="stock-card-qty"
+              data-size="${n}"
+              type="number"
+              min="0"
+              step="1"
+              inputmode="numeric"
+              value="0"
+              autocomplete="off">
+          </label>
+        `).join('') || '<div class="empty">No sizes configured.</div>'}
+      </div>
+
+      <div class="stock-model-actions">
+        <span class="stock-total">Total entered: <b class="stock-entered-total">0</b> pairs</span>
+        <button class="primary stock-save" type="button" data-save-model="${esc(m.id)}">
+          Save ${esc(m.model_code)}
+        </button>
+      </div>
     </div>`;
   }).join('');
-  box.querySelectorAll('.stock-card-qty').forEach(input=>input.addEventListener('input',()=>{const card=input.closest('.stock-model-card');card.querySelector('.stock-entered-total').textContent=[...card.querySelectorAll('.stock-card-qty')].reduce((a,x)=>a+Math.max(0,Number(x.value)||0),0)}));
+
+  box.querySelectorAll('.stock-save').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      saveModelStock(btn.dataset.saveModel);
+    });
+  });
+
+  // Update the total whenever a quantity changes. Use delegation so it also works
+  // reliably after the Stock In cards are re-rendered.
+  box.addEventListener('input', updateStockCardTotal);
+  box.addEventListener('change', updateStockCardTotal);
+  box.querySelectorAll('.stock-model-card').forEach(updateStockCardTotal);
+
+  function updateStockCardTotal(eventOrCard){
+    const card = eventOrCard instanceof Element
+      ? eventOrCard
+      : eventOrCard.target?.closest?.('.stock-model-card');
+    if(!card) return;
+    const total=[...card.querySelectorAll('input[type=number][data-size]')]
+      .reduce((sum,x)=>sum+Math.max(0,Number(x.value)||0),0);
+    const totalEl=card.querySelector('.stock-entered-total');
+    if(totalEl) totalEl.textContent=total;
+  }
 }
 function sizeInputs(id){let map={saleModel:'saleSizes',corModel:'corSizes'},box=document.getElementById(map[id]),m=models.find(x=>x.id===document.getElementById(id).value);if(!m){box.innerHTML='';return}let z=ms(m.id);box.innerHTML=z.map(n=>{let q=currentQty(m.id,n);return `<label class="size-box" style="display:block"><b>Size ${n}</b><small>Current: ${q}</small><input class="qty" data-size="${n}" type="number" min="0" value="0" style="width:100%"></label>`}).join('')}
 async function compress(file){return new Promise((res,rej)=>{let r=new FileReader;r.onload=()=>{let i=new Image;i.onload=()=>{let max=900,w=i.width,h=i.height;if(w>max||h>max){if(w>h){h=h*max/w;w=max}else{w=w*max/h;h=max}}let c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(i,0,0,w,h);res(c.toDataURL('image/jpeg',.78))};i.onerror=rej;i.src=r.result};r.onerror=rej;r.readAsDataURL(file)})}
@@ -207,7 +309,8 @@ async function createModel(){
   const modelPrice=Number(document.getElementById('price').value)||0;
   const modelMin=Number(document.getElementById('min').value)||0;
   const file=document.getElementById('image').files[0]||null;
-  const selectedSizes=checked('createSizes');
+  const selectedSizes=selectedCreateSizes();
+  const initialStockRows=initialCreateStockRows();
 
   if(!modelCode){ alert('Please enter a Model Code.'); return; }
   if(!modelName){ alert('Please enter a Model Name.'); return; }
@@ -271,7 +374,45 @@ async function createModel(){
       return;
     }
 
-    // STEP 3: Save the image after the model exists.
+    // STEP 3: Save any initial stock entered directly in the Model form.
+    // This is recorded as a normal Stock In transaction, so current_stock
+    // remains calculated from the cloud transaction tables.
+    if(initialStockRows.length){
+      try{
+        const stockHead=await db.from('stock_in').insert({
+          transaction_date:today,
+          supplier:null,
+          note:'Initial stock entered when model was created'
+        }).select().single();
+        if(stockHead.error)throw stockHead.error;
+        const fresh=await db.from('shoe_sizes').select('id,size').eq('model_id',modelId);
+        if(fresh.error){await db.from('stock_in').delete().eq('id',stockHead.data.id);throw fresh.error;}
+        const missingSize=initialStockRows.find(x=>!fresh.data.some(z=>Number(z.size)===Number(x.size)));
+        if(missingSize){
+          await db.from('stock_in').delete().eq('id',stockHead.data.id);
+          throw new Error('Could not find created size '+missingSize.size);
+        }
+        const stockItems=initialStockRows.map(x=>{
+          const shoeSize=fresh.data.find(z=>Number(z.size)===Number(x.size));
+          return {
+            stock_in_id:stockHead.data.id,
+            shoe_size_id:shoeSize.id,
+            quantity:Number(x.quantity),
+            unit_cost:Number(modelCost||0)
+          };
+        });
+        const stockResult=await db.from('stock_in_items').insert(stockItems);
+        if(stockResult.error){
+          await db.from('stock_in').delete().eq('id',stockHead.data.id);
+          throw stockResult.error;
+        }
+      }catch(stockErr){
+        console.error('Initial stock save error:',stockErr);
+        alert('Model and sizes were created, but the initial stock could not be saved. You can add it later in Stock In.\n\n'+(stockErr.message||stockErr));
+      }
+    }
+
+    // STEP 4: Save the image after the model exists.
     if(file){
       try{
         const imageUrl=await saveImage(file,modelId);
@@ -312,8 +453,22 @@ async function createModel(){
 }
 
 
-function resetModel(){modelForm.reset();min.value=2;grid('createSizes');imageBox.innerHTML=''}
-async function replaceSizes(id,z){await db.from('shoe_sizes').delete().eq('model_id',id);if(z.length)await db.from('shoe_sizes').insert(z.map(size=>({model_id:id,size})))}
+function resetModel(){modelForm.reset();min.value=2;createSizeGrid();imageBox.innerHTML=''}
+async function replaceSizes(id,z){
+  const wanted=[...new Set(z.map(Number))].sort((a,b)=>a-b);
+  const existing=sizes.filter(x=>String(x.model_id)===String(id));
+  const existingNums=existing.map(x=>Number(x.size));
+
+  // Never delete an existing shoe_size: stock_in_items references it.
+  const toAdd=wanted.filter(n=>!existingNums.includes(n));
+
+  if(toAdd.length){
+    const r=await db.from('shoe_sizes').insert(
+      toAdd.map(size=>({model_id:id,size}))
+    );
+    if(r.error)throw r.error;
+  }
+}
 function imageSrc(v){
   if(!v)return '';
   const s=String(v);
@@ -329,7 +484,7 @@ function imageHtml(v){
 
 function renderModels(){
   let q=(search.value||'').toLowerCase();
-  modelsTable.innerHTML=models.filter(m=>[m.model_code,m.model_name,m.color].join(' ').toLowerCase().includes(q)).map(m=>`<tr><td><div class="image-cell">${imageHtml(m.image_url)}</div></td><td>${esc(m.model_code)}</td><td>${esc(m.model_name)}</td><td>${esc(m.color)}</td><td>$${(+m.cost_price||0).toFixed(2)}</td><td>$${(+m.selling_price||0).toFixed(2)}</td><td>${m.minimum_stock}</td><td>${ms(m.id).join(', ')}</td><td><div class="actions"><button class="secondary" onclick="editModel('${m.id}')">Edit</button><button class="secondary" onclick="copyModel('${m.id}')">Copy</button><button class="secondary" onclick="manageSizes('${m.id}')">Sizes</button><button class="danger" onclick="delModel('${m.id}')">Delete</button></div></td></tr>`).join('')||'<tr><td colspan="9" class="empty">No models yet.</td></tr>';
+  modelsTable.innerHTML=models.filter(m=>[m.model_code,m.model_name,m.color].join(' ').toLowerCase().includes(q)).map(m=>`<tr><td><div class="image-cell">${imageHtml(m.image_url)}</div></td><td>${esc(m.model_code)}</td><td>${esc(m.model_name)}</td><td>${esc(m.color)}</td><td>$${(+m.cost_price||0).toFixed(2)}</td><td>$${(+m.selling_price||0).toFixed(2)}</td><td>${m.minimum_stock}</td><td>${modelStockSummary(m.id)}</td><td><div class="actions"><button class="secondary" onclick="editModel('${m.id}')">Edit</button><button class="secondary" onclick="copyModel('${m.id}')">Copy</button><button class="secondary" onclick="manageSizes('${m.id}')">Sizes</button><button class="danger" onclick="delModel('${m.id}')">Delete</button></div></td></tr>`).join('')||'<tr><td colspan="9" class="empty">No models yet.</td></tr>';
 }
 function editModel(id){let m=models.find(x=>x.id===id);if(!m)return;editId.value=m.id;editCode.value=m.model_code;editName.value=m.model_name;editColor.value=m.color||'';editCost.value=m.cost_price||0;editPrice.value=m.selling_price||0;editMin.value=m.minimum_stock||0;grid('editSizes',ms(id));editModal.classList.add('show')}
 editForm.onsubmit=async e=>{
@@ -342,7 +497,11 @@ editForm.onsubmit=async e=>{
     cost_price:+editCost.value||0,selling_price:+editPrice.value||0,minimum_stock:+editMin.value||0,image_url:imageUrl
   }).eq('id',id);
   if(r.error)return alert(r.error.message);
-  await replaceSizes(id,checked('editSizes'));
+  try{
+    await replaceSizes(id,checked('editSizes'));
+  }catch(err){
+    return alert('Model details were saved, but sizes could not be changed:\n\n'+err.message);
+  }
   closeEdit();msg('Model updated');await load();
 }
 function closeEdit(){editModal.classList.remove('show')}
@@ -366,29 +525,141 @@ async function addStockIn(date,supplierValue,referenceValue,rows){
   if(detail.error)throw detail.error;
 }
 async function saveModelStock(model_id){
+  const card=[...document.querySelectorAll('.stock-model-card')]
+    .find(x=>String(x.dataset.modelId)===String(model_id));
+
+  if(!card){
+    return alert('Could not find this shoe model on the Stock In page.');
+  }
+
+  const button=card.querySelector('.stock-save');
+
   try{
     const date=document.getElementById('stockDate').value;
     const supplierValue=document.getElementById('supplier').value.trim();
     const referenceValue=document.getElementById('stockRef').value.trim();
-    const card=document.querySelector(`.stock-model-card[data-model-id="${model_id}"]`);
-    const rows=[...card.querySelectorAll('.stock-card-qty')].filter(x=>Number(x.value)>0);
-    if(!date)return alert('Please select a date.');
-    if(!rows.length)return alert('Enter quantity for at least one size.');
-    const modelSizes=sizes.filter(x=>x.model_id===model_id);
+
+    if(!date){
+      alert('Please select a date.');
+      return;
+    }
+
+    // Read only the quantity inputs inside this model's card.
+    // Read the actual value from every size input in THIS model card.
+    // Do not rely on the displayed total or on an input event having fired.
+    const inputs=[...card.querySelectorAll('input[type=number][data-size]')];
+    const rows=inputs
+      .map(input=>({
+        input,
+        size:Number(input.dataset.size),
+        quantity:Math.max(0,Number(String(input.value).trim())||0)
+      }))
+      .filter(x=>x.quantity>0);
+
+    if(!rows.length){
+      alert('Please enter a quantity greater than 0 for at least one size.\nExample: Size 21 = 5.');
+      return;
+    }
+
+    // Refresh the total immediately before saving.
+    const totalEl=card.querySelector('.stock-entered-total');
+    if(totalEl) totalEl.textContent=rows.reduce((sum,x)=>sum+x.quantity,0);
+
+    const modelSizes=sizes.filter(x=>String(x.model_id)===String(model_id));
+
     const stockRows=rows.map(x=>{
-      const shoeSize=modelSizes.find(s=>Number(s.size)===Number(x.dataset.size));
-      if(!shoeSize)throw new Error('Could not find shoe size '+x.dataset.size);
-      return {shoeSizeId:shoeSize.id,quantity:Number(x.value),unitCost:Number(models.find(m=>m.id===model_id)?.cost_price||0)};
+      const shoeSize=modelSizes.find(s=>Number(s.size)===x.size);
+
+      if(!shoeSize){
+        throw new Error('Could not find Size '+x.size+' for this model.');
+      }
+
+      return {
+        shoeSizeId:shoeSize.id,
+        quantity:x.quantity,
+        unitCost:Number(
+          models.find(m=>String(m.id)===String(model_id))?.cost_price||0
+        )
+      };
     });
+
+    if(button){
+      button.disabled=true;
+      button.textContent='Saving...';
+    }
+
     await addStockIn(date,supplierValue,referenceValue,stockRows);
-    msg(`✅ ${models.find(m=>m.id===model_id)?.model_code||'Model'} stock saved`);
-    rows.forEach(x=>x.value=0);
+
+    msg(`✅ ${models.find(m=>String(m.id)===String(model_id))?.model_code||'Model'} stock saved`);
+
+    rows.forEach(x=>x.input.value='0');
     card.querySelector('.stock-entered-total').textContent='0';
+
     await load();
-  }catch(err){console.error(err);alert('Stock In error: '+err.message)}
+
+  }catch(err){
+    console.error('Stock In error:',err);
+    alert('Stock In error:\n\n'+(err.message||err));
+  }finally{
+    if(button){
+      button.disabled=false;
+      const m=models.find(x=>String(x.id)===String(model_id));
+      button.textContent='Save '+(m?.model_code||'Model');
+    }
+  }
 }
 
-saleForm.onsubmit=async e=>{e.preventDefault();let model_id=saleModel.value,date=saleDate.value,rows=[...document.querySelectorAll('#saleSizes .qty')].filter(x=>+x.value>0),m=models.find(x=>x.id===model_id);if(!rows.length)return alert('Enter quantity');for(let x of rows){let old=stock.find(y=>y.model_id===model_id&&+y.size===+x.dataset.size),qty=+x.value;if(!old||(+old.quantity||0)<qty)return alert('Not enough stock for size '+x.dataset.size);let r=await db.from('current_stock').update({quantity:+old.quantity-qty}).eq('id',old.id);if(r.error)return alert(r.error.message)}let ins=await db.from('sales').insert(rows.map(x=>({model_id,size:+x.dataset.size,quantity:+x.value,date,customer:customer.value,payment:payment.value,total_amount:(+x.value)*(+m.selling_price||0),profit:(+x.value)*((+m.selling_price||0)-(+m.cost_price||0))})));if(ins.error)return alert(ins.error.message);msg('Sale saved');e.target.reset();saleDate.value=today;await load();sizeInputs('saleModel')}
+saleForm.onsubmit=async e=>{
+  e.preventDefault();
+
+  const model_id=saleModel.value;
+  const date=saleDate.value;
+  const rows=[...document.querySelectorAll('#saleSizes .qty')].filter(x=>+x.value>0);
+  const m=models.find(x=>String(x.id)===String(model_id));
+
+  if(!rows.length)return alert('Enter quantity');
+
+  for(const x of rows){
+    const old=stock.find(y=>String(y.model_id)===String(model_id)&&Number(y.size)===Number(x.dataset.size));
+    const qty=Number(x.value);
+
+    if(!old || currentQty(model_id,x.dataset.size)<qty){
+      return alert('Not enough stock for size '+x.dataset.size);
+    }
+
+    let r=await db.from('current_stock')
+      .update({current_stock:currentQty(model_id,x.dataset.size)-qty})
+      .eq('id',old.id);
+
+    if(r.error){
+      r=await db.from('current_stock')
+        .update({quantity:currentQty(model_id,x.dataset.size)-qty})
+        .eq('id',old.id);
+    }
+
+    if(r.error)return alert(r.error.message);
+  }
+
+  const ins=await db.from('sales').insert(rows.map(x=>({
+    model_id,
+    size:+x.dataset.size,
+    quantity:+x.value,
+    date,
+    customer:customer.value,
+    payment:payment.value,
+    total_amount:(+x.value)*(+m.selling_price||0),
+    profit:(+x.value)*((+m.selling_price||0)-(+m.cost_price||0))
+  })));
+
+  if(ins.error)return alert(ins.error.message);
+
+  msg('Sale saved');
+  e.target.reset();
+  saleDate.value=today;
+  await load();
+  sizeInputs('saleModel');
+}
+
 async function renderStock(){
   const r=await db.from('stock_in').select('id,transaction_date,supplier,note,created_at').order('transaction_date',{ascending:false}).order('created_at',{ascending:false});
   if(r.error)return stockHistory.innerHTML='<div class="empty">Stock history is not available.</div>';
@@ -435,12 +706,64 @@ async function renderSales(){
   }).join('');
 }
 async function renderCorrection(){let r=await db.from('stock_corrections').select('*').order('created_at',{ascending:false});if(r.error)return corHistory.innerHTML='<div class="empty">Correction history table is not available yet.</div>';corHistory.innerHTML='<table><tr><th>Date</th><th>Model</th><th>Size</th><th>New Qty</th><th>Reason</th></tr>'+r.data.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(models.find(m=>m.id===x.model_id)?.model_code||x.model_id)}</td><td>${x.size}</td><td>${x.quantity}</td><td>${esc(x.reason)}</td></tr>`).join('')+'</table>'}
-correctionForm.onsubmit=async e=>{e.preventDefault();let model_id=corModel.value,rows=[...document.querySelectorAll('#corSizes .qty')],reason=corReason.value,date=corDate.value;for(let x of rows){let n=+x.value,old=stock.find(y=>y.model_id===model_id&&+y.size===+x.dataset.size);if(old){let r=await db.from('current_stock').update({quantity:n}).eq('id',old.id);if(r.error)return alert(r.error.message)}else if(n>0){let r=await db.from('current_stock').insert({model_id,size:+x.dataset.size,quantity:n});if(r.error)return alert(r.error.message)}let h=await db.from('stock_corrections').insert({model_id,size:+x.dataset.size,quantity:n,date,reason});if(h.error)console.warn(h.error)}msg('Correction saved');await load();sizeInputs('corModel')}
+correctionForm.onsubmit=async e=>{
+  e.preventDefault();
+
+  const model_id=corModel.value;
+  const rows=[...document.querySelectorAll('#corSizes .qty')];
+  const reason=corReason.value;
+  const date=corDate.value;
+
+  for(const x of rows){
+    const n=Number(x.value);
+    const old=stock.find(y=>String(y.model_id)===String(model_id)&&Number(y.size)===Number(x.dataset.size));
+
+    if(old){
+      let r=await db.from('current_stock')
+        .update({current_stock:n})
+        .eq('id',old.id);
+
+      if(r.error){
+        r=await db.from('current_stock')
+          .update({quantity:n})
+          .eq('id',old.id);
+      }
+
+      if(r.error)return alert(r.error.message);
+
+    }else if(n>0){
+      let r=await db.from('current_stock')
+        .insert({model_id,size:+x.dataset.size,current_stock:n});
+
+      if(r.error){
+        r=await db.from('current_stock')
+          .insert({model_id,size:+x.dataset.size,quantity:n});
+      }
+
+      if(r.error)return alert(r.error.message);
+    }
+
+    const h=await db.from('stock_corrections').insert({
+      model_id,
+      size:+x.dataset.size,
+      quantity:n,
+      date,
+      reason
+    });
+
+    if(h.error)console.warn(h.error);
+  }
+
+  msg('Correction saved');
+  await load();
+  sizeInputs('corModel');
+}
+
 function renderReports(){let purchase=stock.reduce((a,x)=>a+(+x.current_stock||0),0),rev=sales.reduce((a,x)=>a+(+x.total_amount||0),0),profit=sales.reduce((a,x)=>a+(+x.profit||0),0);rPurchase.textContent='$'+purchase.toFixed(2);rRevenue.textContent='$'+rev.toFixed(2);rProfit.textContent='$'+profit.toFixed(2);months.innerHTML='<table><tr><th>Month</th><th>Revenue</th></tr>'+Object.entries(sales.reduce((a,x)=>{let k=(x.date||'').slice(0,7);a[k]=(a[k]||0)+(+x.total_amount||0);return a},{})).map(([k,v])=>`<tr><td>${k}</td><td>$${v.toFixed(2)}</td></tr>`).join('')+'</table>'}
 function download(name,text,type){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click()}
 function exportJSON(){download('kids-shoe-backup.json',JSON.stringify({models,sizes,stock,sales,corrections},null,2),'application/json')}
 function exportCSV(){let rows=['model_code,model_name,size,quantity'];stock.forEach(x=>{let m=models.find(z=>z.id===x.model_id)||{};rows.push([m.model_code,m.model_name,x.size,x.current_stock].map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(','))});download('inventory.csv',rows.join('\n'),'text/csv')}
 async function importJSON(){let f=importFile.files[0];if(!f)return alert('Choose a JSON backup first');let data=JSON.parse(await f.text());if(!Array.isArray(data.models))return alert('Invalid backup');for(let m of data.models){let r=await db.from('shoe_models').upsert(m,{onConflict:'id'});if(r.error)console.warn(r.error)}importMsg.textContent='Models imported. Refreshing...';await load()}
-grid('createSizes');grid('editSizes');load();
+createSizeGrid();grid('editSizes');load();
 </script>
 </body></html>
