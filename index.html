@@ -3,895 +3,520 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Kids Shoe Manager V6</title>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-*{
-  box-sizing:border-box;
-}
-
-body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:#f4f6fa;
-  color:#172033;
-}
-
-header{
-  background:#111827;
-  color:white;
-  padding:16px 20px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:15px;
-}
-
-header h1{
-  margin:0;
-  font-size:21px;
-}
-
-header small{
-  color:#cbd5e1;
-}
-
-nav{
-  display:flex;
-  gap:8px;
-  background:white;
-  border-bottom:1px solid #ddd;
-  padding:10px 14px;
-  overflow:auto;
-}
-
-nav button{
-  border:0;
-  padding:9px 14px;
-  border-radius:8px;
-  background:#eef2f7;
-  font-weight:700;
-  cursor:pointer;
-  white-space:nowrap;
-}
-
-nav button.active{
-  background:#2563eb;
-  color:white;
-}
-
-main{
-  max-width:1500px;
-  margin:auto;
-  padding:18px;
-}
-
-.page{
-  display:none;
-}
-
-.page.active{
-  display:block;
-}
-
-.cards{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-  gap:12px;
-  margin-bottom:18px;
-}
-
-.card,
-.panel{
-  background:white;
-  border:1px solid #e1e6ee;
-  border-radius:12px;
-  padding:16px;
-  box-shadow:0 2px 7px #00000008;
-}
-
-.card small{
-  color:#64748b;
-  font-weight:700;
-}
-
-.value{
-  font-size:28px;
-  font-weight:800;
-  margin-top:5px;
-}
-
-form{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-  gap:12px;
-}
-
-label{
-  font-size:13px;
-  font-weight:700;
-  color:#475569;
-}
-
-input,
-select{
-  width:100%;
-  margin-top:5px;
-  padding:10px;
-  border:1px solid #cbd5e1;
-  border-radius:8px;
-  background:white;
-}
-
-button.primary{
-  background:#2563eb;
-  color:white;
-  border:0;
-  border-radius:8px;
-  padding:10px 16px;
-  font-weight:700;
-  cursor:pointer;
-}
-
-button.secondary{
-  background:#eef2f7;
-  color:#172033;
-  border:1px solid #cbd5e1;
-  border-radius:8px;
-  padding:7px 12px;
-  cursor:pointer;
-  font-weight:700;
-}
-
-button.danger{
-  background:#dc2626;
-  color:white;
-  border:0;
-  border-radius:8px;
-  padding:7px 12px;
-  cursor:pointer;
-}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  margin-top:15px;
-}
-
-th,
-td{
-  padding:10px;
-  border-bottom:1px solid #e5e7eb;
-  text-align:left;
-  font-size:14px;
-}
-
-th{
-  background:#f8fafc;
-}
-
-.notice{
-  background:#eff6ff;
-  color:#1e40af;
-  padding:12px;
-  border-radius:8px;
-  margin-bottom:15px;
-}
-
-.status{
-  font-size:13px;
-  font-weight:700;
-}
-
-.ok{
-  color:#15803d;
-}
-
-.error{
-  color:#dc2626;
-}
-
-.empty{
-  text-align:center;
-  color:#64748b;
-  padding:30px;
-}
-
-#loading{
-  position:fixed;
-  inset:0;
-  background:white;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index:100;
-  font-weight:700;
-}
-
-#toast{
-  position:fixed;
-  right:18px;
-  bottom:18px;
-  background:#111827;
-  color:white;
-  padding:11px 15px;
-  border-radius:8px;
-  display:none;
-  z-index:200;
-}
-
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f6fa;color:#172033}
+header{background:#111827;color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:15px}
+header h1{margin:0;font-size:21px}
+header small{color:#cbd5e1}
+nav{display:flex;gap:8px;background:#fff;border-bottom:1px solid #ddd;padding:10px 14px;overflow:auto}
+nav button{border:0;padding:9px 14px;border-radius:8px;background:#eef2f7;font-weight:700;cursor:pointer;white-space:nowrap}
+nav button.active{background:#2563eb;color:#fff}
+main{max-width:1500px;margin:auto;padding:18px}
+.page{display:none}.page.active{display:block}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:18px}
+.card,.panel{background:#fff;border:1px solid #e1e6ee;border-radius:12px;padding:16px;box-shadow:0 2px 7px #00000008}
+.card small{color:#64748b;font-weight:700}.value{font-size:28px;font-weight:800;margin-top:5px}
+form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+label{font-size:13px;font-weight:700;color:#475569}
+input,select{width:100%;margin-top:5px;padding:10px;border:1px solid #cbd5e1;border-radius:8px;background:#fff}
+button.primary{background:#2563eb;color:#fff;border:0;border-radius:8px;padding:10px 16px;font-weight:700;cursor:pointer}
+button.secondary{background:#eef2f7;color:#172033;border:1px solid #cbd5e1;border-radius:8px;padding:7px 12px;cursor:pointer;font-weight:700}
+button.danger{background:#dc2626;color:#fff;border:0;border-radius:8px;padding:7px 12px;cursor:pointer}
+button.warning{background:#f59e0b;color:#fff;border:0;border-radius:8px;padding:7px 12px;cursor:pointer}
+table{width:100%;border-collapse:collapse;margin-top:15px}
+th,td{padding:10px;border-bottom:1px solid #e5e7eb;text-align:left;font-size:14px}
+th{background:#f8fafc}
+.notice{background:#eff6ff;color:#1e40af;padding:12px;border-radius:8px;margin-bottom:15px}
+.status{font-size:13px;font-weight:700}.ok{color:#15803d}.error{color:#dc2626}
+.empty{text-align:center;color:#64748b;padding:30px}
+#loading{position:fixed;inset:0;background:#fff;display:flex;align-items:center;justify-content:center;z-index:100;font-weight:700}
+#toast{position:fixed;right:18px;bottom:18px;background:#111827;color:#fff;padding:11px 15px;border-radius:8px;display:none;z-index:200}
+.image-preview{width:90px;height:90px;border:1px dashed #cbd5e1;border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#f8fafc;color:#64748b;font-size:12px;text-align:center}
+.image-preview img{width:100%;height:100%;object-fit:cover}
+.model-image{width:58px;height:58px;object-fit:cover;border-radius:9px;border:1px solid #e2e8f0;background:#f8fafc}
+.size-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:8px;margin-top:8px}
+.size-box{display:flex;align-items:center;justify-content:center;gap:5px;border:1px solid #cbd5e1;border-radius:8px;padding:8px;background:#fff;cursor:pointer}
+.size-box input{width:auto;margin:0}.size-box:has(input:checked){background:#dbeafe;border-color:#2563eb}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;z-index:300;padding:15px}
+.modal.show{display:flex}.modal-card{background:#fff;border-radius:14px;padding:20px;width:min(650px,100%);max-height:90vh;overflow:auto}
+.modal-card h3{margin-top:0}
+.muted{color:#64748b;font-size:13px}
 @media(max-width:700px){
-  header{
-    align-items:flex-start;
-    flex-direction:column;
-  }
-
-  main{
-    padding:12px;
-  }
-
-  .panel{
-    padding:12px;
-  }
-
-  table{
-    min-width:700px;
-  }
-
-  .table-wrap{
-    overflow:auto;
-  }
+ header{align-items:flex-start;flex-direction:column}main{padding:12px}.panel{padding:12px}
+ .table-wrap{overflow:auto}table{min-width:900px}
 }
 </style>
 </head>
 
 <body>
-
-<div id="loading">
-  Connecting to your cloud database...
-</div>
+<div id="loading">Connecting to your cloud database...</div>
 
 <header>
   <div>
     <h1>👟 Kids Shoe Manager V6</h1>
     <small>Cloud inventory — phone + computer</small>
   </div>
-
-  <div id="status" class="status">
-    Connecting...
-  </div>
+  <div id="status" class="status">Connecting...</div>
 </header>
 
 <nav>
-  <button class="active" onclick="showPage('dashboard',this)">
-    Dashboard
-  </button>
-
-  <button onclick="showPage('models',this)">
-    Models
-  </button>
-
-  <button onclick="showPage('stock',this)">
-    Stock
-  </button>
-
-  <button onclick="showPage('sales',this)">
-    Sales
-  </button>
+  <button class="active" onclick="showPage('dashboard',this)">Dashboard</button>
+  <button onclick="showPage('models',this)">Models</button>
+  <button onclick="showPage('stock',this)">Stock</button>
+  <button onclick="showPage('sales',this)">Sales</button>
 </nav>
 
 <main>
-
-<!-- DASHBOARD -->
-
 <section id="dashboard" class="page active">
-
   <div class="cards">
-
-    <div class="card">
-      <small>Models</small>
-      <div class="value" id="modelCount">0</div>
-    </div>
-
-    <div class="card">
-      <small>Stock Records</small>
-      <div class="value" id="stockCount">0</div>
-    </div>
-
-    <div class="card">
-      <small>Sales</small>
-      <div class="value" id="saleCount">0</div>
-    </div>
-
+    <div class="card"><small>Models</small><div class="value" id="modelCount">0</div></div>
+    <div class="card"><small>Sizes</small><div class="value" id="sizeCount">0</div></div>
+    <div class="card"><small>Stock Records</small><div class="value" id="stockCount">0</div></div>
+    <div class="card"><small>Sales</small><div class="value" id="saleCount">0</div></div>
   </div>
-
   <div class="panel">
-
     <h2>Welcome to Kids Shoe Manager V6</h2>
-
-    <p>
-      This is a new clean version of your shoe inventory system.
-    </p>
-
-    <p>
-      All information will be stored in Supabase Cloud, so the same
-      inventory can be accessed from your phone, tablet and computer.
-    </p>
-
-    <div class="notice">
-      Start by adding your shoe models.
-    </div>
-
+    <p>Cloud inventory for your shoe business. Models, pictures and sizes are stored with your Supabase database.</p>
+    <div class="notice">Start from <b>Models</b>. You can add a picture, choose the sizes, edit a model, copy a model, or manage its sizes.</div>
   </div>
-
 </section>
-
-
-<!-- MODELS -->
 
 <section id="models" class="page">
-
   <div class="panel">
-
-    <h2>👟 Shoe Models</h2>
-
-    <div class="notice">
-      Add your shoe model here. We will connect sizes and stock after
-      this basic system is working.
-    </div>
+    <h2>👟 Create Shoe Model</h2>
+    <div class="notice">You can add any size you need. Sizes are not limited to 21–36.</div>
 
     <form id="modelForm">
+      <label>Model Code<input id="modelCode" required placeholder="Example: M001"></label>
+      <label>Model Name<input id="modelName" required placeholder="Example: Sport Kids"></label>
+      <label>Color<input id="modelColor" placeholder="Example: Black"></label>
+      <label>Cost / Pair<input id="costPrice" type="number" step="0.01" min="0" value="0"></label>
+      <label>Selling Price<input id="sellingPrice" type="number" step="0.01" min="0" value="0"></label>
+      <label>Minimum Stock / Size<input id="minimumStock" type="number" min="0" value="1"></label>
 
       <label>
-        Model Code
-        <input
-          id="modelCode"
-          required
-          placeholder="Example: M001">
+        Image
+        <input id="modelImageFile" type="file" accept="image/*">
       </label>
 
-      <label>
-        Model Name
-        <input
-          id="modelName"
-          required
-          placeholder="Example: Valentino">
-      </label>
-
-      <label>
-        Color
-        <input
-          id="modelColor"
-          placeholder="Example: Black">
-      </label>
-
-      <label>
-        Image URL
-        <input
-          id="modelImage"
-          placeholder="Optional">
-      </label>
-
-      <label>
-        Cost Price
-        <input
-          id="costPrice"
-          type="number"
-          step="0.01"
-          min="0"
-          value="0">
-      </label>
-
-      <label>
-        Selling Price
-        <input
-          id="sellingPrice"
-          type="number"
-          step="0.01"
-          min="0"
-          value="0">
-      </label>
-
-      <label>
-        Minimum Stock
-        <input
-          id="minimumStock"
-          type="number"
-          min="0"
-          value="1">
-      </label>
-
-      <div style="display:flex;align-items:end">
-        <button class="primary" type="submit">
-          + Add Model
-        </button>
+      <div>
+        <div class="muted">Image preview</div>
+        <div id="imagePreview" class="image-preview">No image selected</div>
       </div>
 
+      <label style="grid-column:1/-1">
+        Select Initial Sizes
+        <div class="muted">Tick the sizes this model has. You can add more later.</div>
+        <div id="sizeGrid" class="size-grid"></div>
+      </label>
+
+      <div style="display:flex;align-items:end;gap:8px">
+        <button class="primary" id="saveModelBtn" type="submit">+ Create Model</button>
+        <button class="secondary" id="cancelEditBtn" type="button" onclick="cancelEdit()" style="display:none">Cancel Edit</button>
+      </div>
     </form>
-
   </div>
-
 
   <div class="panel" style="margin-top:15px">
-
     <h2>Model List</h2>
-
-    <input id="modelSearch" type="search"
-      placeholder="🔎 Search model code, name, or color..."
-      oninput="renderModels()"
-      style="width:100%;margin:8px 0 12px;padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
+    <input id="modelSearch" type="search" placeholder="🔎 Search model, code, color..." oninput="renderModels()">
 
     <div class="table-wrap">
-
       <table>
-
         <thead>
           <tr>
-            <th>Code</th>
-            <th>Model</th>
-            <th>Color</th>
-            <th>Cost</th>
-            <th>Selling</th>
-            <th>Minimum</th>
-            <th>Action</th>
+            <th>Image</th><th>Code</th><th>Model</th><th>Color</th>
+            <th>Cost</th><th>Selling</th><th>Minimum</th><th>Sizes</th><th>Action</th>
           </tr>
         </thead>
-
-        <tbody id="modelsTable">
-        </tbody>
-
+        <tbody id="modelsTable"></tbody>
       </table>
-
     </div>
-
   </div>
-
 </section>
-
-
-<!-- STOCK -->
 
 <section id="stock" class="page">
-
   <div class="panel">
-
     <h2>📦 Stock</h2>
-
-    <div class="empty">
-      Stock management will be connected next.
-    </div>
-
+    <div class="empty">Stock-in and stock-out will be connected after the Models system is stable.</div>
   </div>
-
 </section>
-
-
-<!-- SALES -->
 
 <section id="sales" class="page">
-
   <div class="panel">
-
     <h2>💰 Sales</h2>
-
-    <div class="empty">
-      Sales management will be connected next.
-    </div>
-
+    <div class="empty">Sales will be connected after the Stock system is stable.</div>
   </div>
-
 </section>
-
 </main>
 
 <div id="toast"></div>
 
+<div id="sizeModal" class="modal">
+  <div class="modal-card">
+    <h3 id="sizeModalTitle">Manage Sizes</h3>
+    <p id="sizeModalCurrent" class="muted"></p>
+    <div id="modalSizeGrid" class="size-grid"></div>
+    <div style="display:flex;gap:8px;margin-top:15px">
+      <button class="primary" onclick="saveManagedSizes()">Save Sizes</button>
+      <button class="secondary" onclick="closeSizeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <script>
-
-/* =========================================================
-   SUPABASE CONNECTION
-   ========================================================= */
-
 const SUPABASE_URL = "https://iwhayhorchwcfcqlkdri.supabase.co";
+const SUPABASE_KEY = "sb_publishable_VG-IfE2aD-N3Q24dg2OrIQ_QLX5cXPd";
+const client = supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-const SUPABASE_KEY =
-"sb_publishable_VG-IfE2aD-N3Q24dg2OrIQ_QLX5cXPd";
+let modelsCache=[];
+let sizesCache=[];
+let editingId="";
+let managingModelId="";
 
-const client =
-  supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-  );
-
-
-/* =========================================================
-   BASIC FUNCTIONS
-   ========================================================= */
+const ALL_SIZES = Array.from({length:25},(_,i)=>i+21);
 
 function showPage(id,button){
-
-  document
-    .querySelectorAll(".page")
-    .forEach(page =>
-      page.classList.remove("active")
-    );
-
-  document
-    .getElementById(id)
-    .classList.add("active");
-
-  document
-    .querySelectorAll("nav button")
-    .forEach(btn =>
-      btn.classList.remove("active")
-    );
-
-  if(button){
-    button.classList.add("active");
-  }
-
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+  if(button) button.classList.add("active");
 }
-
 
 function toast(message){
-
-  const el =
-    document.getElementById("toast");
-
-  el.textContent = message;
-  el.style.display = "block";
-
-  setTimeout(() => {
-    el.style.display = "none";
-  },2500);
-
+  const el=document.getElementById("toast");
+  el.textContent=message; el.style.display="block";
+  setTimeout(()=>el.style.display="none",2500);
 }
 
-
-/* =========================================================
-   LOAD MODELS
-   ========================================================= */
-
-let modelsCache = [];
-
-async function loadModels(){
-
-  const {data,error} =
-    await client
-      .from("shoe_models")
-      .select("*")
-      .order("model_code");
-
-  if(error){
-
-    document.getElementById("status").textContent =
-      "❌ Database error";
-
-    document.getElementById("status").className =
-      "status error";
-
-    console.error(error);
-    return;
-  }
-
-  modelsCache = data || [];
-
-  document.getElementById("status").textContent =
-    "☁️ Cloud connected";
-
-  document.getElementById("status").className =
-    "status ok";
-
-  document.getElementById("modelCount").textContent =
-    modelsCache.length;
-
-  renderModels();
+function escapeHtml(value){
+  return String(value ?? "")
+    .replaceAll("&","&amp;").replaceAll("<","&lt;")
+    .replaceAll(">","&gt;").replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
 }
 
-function renderModels(){
-
-  const table = document.getElementById("modelsTable");
-  const search = (document.getElementById("modelSearch")?.value || "")
-    .trim().toLowerCase();
-
-  const filtered = modelsCache.filter(model => {
-    const code = String(model.model_code || "").toLowerCase();
-    const name = String(model.model_name || "").toLowerCase();
-    const color = String(model.color || "").toLowerCase();
-    return !search || code.includes(search) || name.includes(search) || color.includes(search);
-  });
-
-  if(!filtered.length){
-
-    table.innerHTML =
-      `<tr><td colspan="7" class="empty">${
-        modelsCache.length ? "No matching shoe models." : "No shoe models yet."
-      }</td></tr>`;
-
-    return;
-  }
-
-  table.innerHTML = filtered.map(model => `
-
-    <tr>
-      <td>${escapeHtml(model.model_code || "")}</td>
-      <td>${escapeHtml(model.model_name || "")}</td>
-      <td>${escapeHtml(model.color || "")}</td>
-      <td>$${Number(model.cost_price || 0).toFixed(2)}</td>
-      <td>$${Number(model.selling_price || 0).toFixed(2)}</td>
-      <td>${model.minimum_stock ?? 0}</td>
-      <td>
-        <button class="secondary" onclick="editModel('${model.id}')">Edit</button>
-        <button class="secondary" onclick="copyModel('${model.id}')">Copy</button>
-        <button class="secondary" onclick="manageSizes('${model.id}')">Sizes</button>
-        <button class="danger" onclick="deleteModel('${model.id}')">Delete</button>
-      </td>
-    </tr>
-
+function buildSizeGrid(containerId,selected=[]){
+  const box=document.getElementById(containerId);
+  const selectedSet=new Set(selected.map(Number));
+  box.innerHTML=ALL_SIZES.map(size=>`
+    <label class="size-box">
+      <input type="checkbox" value="${size}" ${selectedSet.has(size)?"checked":""}>
+      ${size}
+    </label>
   `).join("");
 }
 
-
-/* =========================================================
-   ADD MODEL
-   ========================================================= */
-
-document
-  .getElementById("modelForm")
-  .addEventListener("submit",async function(e){
-
-    e.preventDefault();
-
-    const editingId = this.dataset.editingId || "";
-
-    const model = {
-      model_code: document.getElementById("modelCode").value.trim(),
-      model_name: document.getElementById("modelName").value.trim(),
-      color: document.getElementById("modelColor").value.trim(),
-      image_url: document.getElementById("modelImage").value.trim() || null,
-      cost_price: Number(document.getElementById("costPrice").value || 0),
-      selling_price: Number(document.getElementById("sellingPrice").value || 0),
-      minimum_stock: Number(document.getElementById("minimumStock").value || 0)
-    };
-
-    const result = editingId
-      ? await client.from("shoe_models").update(model).eq("id", editingId)
-      : await client.from("shoe_models").insert(model);
-
-    if(result.error){
-
-      alert(
-        (editingId ? "Could not update model:\n\n" : "Could not add model:\n\n") +
-        result.error.message
-      );
-
-      console.error(result.error);
-      return;
-    }
-
-    toast(editingId ? "Model updated successfully!" : "Model added successfully!");
-
-    this.reset();
-    delete this.dataset.editingId;
-
-    document.getElementById("costPrice").value = 0;
-    document.getElementById("sellingPrice").value = 0;
-    document.getElementById("minimumStock").value = 1;
-
-    this.querySelector("button[type='submit']").textContent = "+ Add Model";
-
-    await loadModels();
-
-  });
-
-
-/* =========================================================
-   EDIT MODEL
-   ========================================================= */
-
-function editModel(id){
-
-  const model = modelsCache.find(item => item.id === id);
-
-  if(!model){
-    alert("Model not found.");
-    return;
-  }
-
-  document.getElementById("modelCode").value = model.model_code || "";
-  document.getElementById("modelName").value = model.model_name || "";
-  document.getElementById("modelColor").value = model.color || "";
-  document.getElementById("modelImage").value = model.image_url || "";
-  document.getElementById("costPrice").value = model.cost_price ?? 0;
-  document.getElementById("sellingPrice").value = model.selling_price ?? 0;
-  document.getElementById("minimumStock").value = model.minimum_stock ?? 0;
-
-  const form = document.getElementById("modelForm");
-  form.dataset.editingId = id;
-
-  form.querySelector("button[type='submit']").textContent = "Save Changes";
-
-  document.getElementById("models").scrollIntoView({behavior:"smooth"});
-
+function getCheckedSizes(containerId){
+  return [...document.querySelectorAll(`#${containerId} input:checked`)].map(x=>Number(x.value));
 }
 
+async function loadData(){
+  const modelResult=await client.from("shoe_models").select("*").order("model_code");
+  if(modelResult.error){
+    setStatus("❌ Database error","error");
+    console.error(modelResult.error);
+    document.getElementById("loading").style.display="none";
+    return;
+  }
+  modelsCache=modelResult.data||[];
 
-/* =========================================================
-   COPY MODEL
-   ========================================================= */
+  const sizeResult=await client.from("shoe_sizes").select("id,model_id,size").order("size");
+  if(!sizeResult.error) sizesCache=sizeResult.data||[];
+  else console.warn("shoe_sizes:",sizeResult.error);
 
-async function copyModel(id){
+  document.getElementById("modelCount").textContent=modelsCache.length;
+  document.getElementById("sizeCount").textContent=sizesCache.length;
 
-  const model = modelsCache.find(item => item.id === id);
+  let stockCount=0;
+  const stockResult=await client.from("current_stock").select("*");
+  if(!stockResult.error) stockCount=(stockResult.data||[]).length;
+  document.getElementById("stockCount").textContent=stockCount;
 
-  if(!model){
-    alert("Model not found.");
+  let saleCount=0;
+  const saleResult=await client.from("sales").select("*");
+  if(!saleResult.error) saleCount=(saleResult.data||[]).length;
+  document.getElementById("saleCount").textContent=saleCount;
+
+  setStatus("☁️ Cloud connected","ok");
+  renderModels();
+  document.getElementById("loading").style.display="none";
+}
+
+function setStatus(text,cls){
+  const el=document.getElementById("status");
+  el.textContent=text;
+  el.className="status "+cls;
+}
+
+function getModelSizes(modelId){
+  return sizesCache.filter(x=>x.model_id===modelId).map(x=>Number(x.size)).sort((a,b)=>a-b);
+}
+
+function renderModels(){
+  const table=document.getElementById("modelsTable");
+  const search=(document.getElementById("modelSearch").value||"").trim().toLowerCase();
+
+  const data=modelsCache.filter(m=>{
+    const text=[m.model_code,m.model_name,m.color].map(x=>String(x||"").toLowerCase()).join(" ");
+    return !search || text.includes(search);
+  });
+
+  if(!data.length){
+    table.innerHTML=`<tr><td colspan="9" class="empty">${modelsCache.length?"No matching models.":"No shoe models yet. Create one above."}</td></tr>`;
     return;
   }
 
-  const newCode = prompt(
-    "Enter the new Model Code:",
-    (model.model_code || "") + "-COPY"
-  );
+  table.innerHTML=data.map(m=>{
+    const sizes=getModelSizes(m.id);
+    const image=m.image_url
+      ? `<img class="model-image" src="${escapeHtml(m.image_url)}" alt="shoe">`
+      : `<div class="model-image" style="display:flex;align-items:center;justify-content:center;font-size:11px;color:#64748b">No image</div>`;
 
-  if(newCode === null) return;
+    return `<tr>
+      <td>${image}</td>
+      <td>${escapeHtml(m.model_code)}</td>
+      <td>${escapeHtml(m.model_name)}</td>
+      <td>${escapeHtml(m.color)}</td>
+      <td>$${Number(m.cost_price||0).toFixed(2)}</td>
+      <td>$${Number(m.selling_price||0).toFixed(2)}</td>
+      <td>${m.minimum_stock ?? 0}</td>
+      <td>${sizes.length?sizes.join(", "):"None"}</td>
+      <td>
+        <div class="actions">
+          <button class="secondary" onclick="editModel('${m.id}')">✏️ Edit</button>
+          <button class="secondary" onclick="copyModel('${m.id}')">📋 Copy</button>
+          <button class="secondary" onclick="manageSizes('${m.id}')">📏 Sizes</button>
+          <button class="danger" onclick="deleteModel('${m.id}')">Delete</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join("");
+}
 
-  const code = newCode.trim();
-
-  if(!code){
-    alert("Model Code is required.");
-    return;
+document.getElementById("modelImageFile").addEventListener("change",async e=>{
+  const file=e.target.files?.[0];
+  if(!file){document.getElementById("imagePreview").innerHTML="No image selected";return;}
+  try{
+    const data=await compressImage(file);
+    document.getElementById("imagePreview").innerHTML=`<img src="${data}" alt="preview">`;
+    document.getElementById("modelImageFile").dataset.dataUrl=data;
+  }catch(err){
+    alert("Could not read this image.");
+    console.error(err);
   }
+});
 
-  const copiedModel = {
-    model_code: code,
-    model_name: model.model_name || "",
-    color: model.color || "",
-    image_url: model.image_url || null,
-    cost_price: Number(model.cost_price || 0),
-    selling_price: Number(model.selling_price || 0),
-    minimum_stock: Number(model.minimum_stock || 0)
+function compressImage(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>{
+      const img=new Image();
+      img.onload=()=>{
+        const max=900;
+        let w=img.width,h=img.height;
+        if(w>max||h>max){
+          if(w>h){h=Math.round(h*max/w);w=max}
+          else{w=Math.round(w*max/h);h=max}
+        }
+        const canvas=document.createElement("canvas");
+        canvas.width=w;canvas.height=h;
+        canvas.getContext("2d").drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL("image/jpeg",0.78));
+      };
+      img.onerror=reject;
+      img.src=reader.result;
+    };
+    reader.onerror=reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+document.getElementById("modelForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+
+  const code=document.getElementById("modelCode").value.trim();
+  const name=document.getElementById("modelName").value.trim();
+  if(!code||!name){alert("Model Code and Model Name are required.");return;}
+
+  const model={
+    model_code:code,
+    model_name:name,
+    color:document.getElementById("modelColor").value.trim(),
+    image_url:document.getElementById("modelImageFile").dataset.dataUrl || null,
+    cost_price:Number(document.getElementById("costPrice").value||0),
+    selling_price:Number(document.getElementById("sellingPrice").value||0),
+    minimum_stock:Number(document.getElementById("minimumStock").value||0)
   };
 
-  const {error} = await client
-    .from("shoe_models")
-    .insert(copiedModel);
+  if(editingId && !model.image_url){
+    const old=modelsCache.find(x=>x.id===editingId);
+    model.image_url=old?.image_url||null;
+  }
 
-  if(error){
-    alert("Could not copy model:\n\n" + error.message);
+  const result=editingId
+    ? await client.from("shoe_models").update(model).eq("id",editingId)
+    : await client.from("shoe_models").insert(model).select().single();
+
+  if(result.error){
+    alert("Could not save model:\n\n"+result.error.message);
+    console.error(result.error);
     return;
+  }
+
+  const savedId=editingId || result.data.id;
+  const selectedSizes=getCheckedSizes("sizeGrid");
+
+  if(!editingId){
+    const rows=selectedSizes.map(size=>({model_id:savedId,size}));
+    if(rows.length){
+      const sr=await client.from("shoe_sizes").insert(rows);
+      if(sr.error){alert("Model saved, but sizes could not be saved:\n\n"+sr.error.message);}
+    }
+  }else{
+    await replaceSizes(savedId,selectedSizes);
+  }
+
+  toast(editingId?"Model updated successfully!":"Model created successfully!");
+  cancelEdit();
+  await loadData();
+  showPage("models",document.querySelectorAll("nav button")[1]);
+});
+
+async function replaceSizes(modelId,sizes){
+  const del=await client.from("shoe_sizes").delete().eq("model_id",modelId);
+  if(del.error){alert("Could not update sizes:\n\n"+del.error.message);return false;}
+  if(sizes.length){
+    const ins=await client.from("shoe_sizes").insert(sizes.map(size=>({model_id:modelId,size})));
+    if(ins.error){alert("Could not save sizes:\n\n"+ins.error.message);return false;}
+  }
+  return true;
+}
+
+function editModel(id){
+  const m=modelsCache.find(x=>x.id===id);
+  if(!m)return;
+
+  editingId=id;
+  document.getElementById("modelCode").value=m.model_code||"";
+  document.getElementById("modelName").value=m.model_name||"";
+  document.getElementById("modelColor").value=m.color||"";
+  document.getElementById("costPrice").value=m.cost_price??0;
+  document.getElementById("sellingPrice").value=m.selling_price??0;
+  document.getElementById("minimumStock").value=m.minimum_stock??1;
+
+  const file=document.getElementById("modelImageFile");
+  file.value="";
+  delete file.dataset.dataUrl;
+
+  document.getElementById("imagePreview").innerHTML=m.image_url
+    ? `<img src="${escapeHtml(m.image_url)}" alt="current image">`
+    : "No image";
+
+  buildSizeGrid("sizeGrid",getModelSizes(id));
+  document.getElementById("saveModelBtn").textContent="💾 Save Changes";
+  document.getElementById("cancelEditBtn").style.display="inline-block";
+  document.getElementById("modelCode").focus();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function cancelEdit(){
+  editingId="";
+  const form=document.getElementById("modelForm");
+  form.reset();
+  document.getElementById("costPrice").value=0;
+  document.getElementById("sellingPrice").value=0;
+  document.getElementById("minimumStock").value=1;
+  document.getElementById("imagePreview").innerHTML="No image selected";
+  delete document.getElementById("modelImageFile").dataset.dataUrl;
+  buildSizeGrid("sizeGrid",[]);
+  document.getElementById("saveModelBtn").textContent="+ Create Model";
+  document.getElementById("cancelEditBtn").style.display="none";
+}
+
+async function copyModel(id){
+  const m=modelsCache.find(x=>x.id===id);
+  if(!m)return;
+
+  const newCode=prompt("Enter the new Model Code:",m.model_code+"-COPY");
+  if(newCode===null)return;
+  if(!newCode.trim()){alert("Model Code is required.");return;}
+
+  const newName=prompt("Enter the new Model Name:",m.model_name+" Copy");
+  if(newName===null)return;
+
+  const insert={
+    model_code:newCode.trim(),
+    model_name:newName.trim(),
+    color:m.color||"",
+    image_url:m.image_url||null,
+    cost_price:Number(m.cost_price||0),
+    selling_price:Number(m.selling_price||0),
+    minimum_stock:Number(m.minimum_stock||0)
+  };
+
+  const r=await client.from("shoe_models").insert(insert).select().single();
+  if(r.error){alert("Could not copy model:\n\n"+r.error.message);return;}
+
+  const oldSizes=getModelSizes(id);
+  if(oldSizes.length){
+    const sr=await client.from("shoe_sizes").insert(oldSizes.map(size=>({model_id:r.data.id,size})));
+    if(sr.error)console.error(sr.error);
   }
 
   toast("Model copied successfully!");
-  await loadModels();
-
+  await loadData();
 }
-
-
-/* =========================================================
-   DELETE MODEL
-   ========================================================= */
 
 async function deleteModel(id){
+  const m=modelsCache.find(x=>x.id===id);
+  if(!m)return;
 
-  if(!confirm(
-    "Delete this shoe model?"
-  )){
-    return;
-  }
+  if(!confirm(`Delete model "${m.model_code} — ${m.model_name}"?\n\nIts sizes will also be removed.`))return;
 
-
-  const {error} =
-    await client
-      .from("shoe_models")
-      .delete()
-      .eq("id",id);
-
-
-  if(error){
-
-    alert(
-      "Could not delete model:\n\n" +
-      error.message
-    );
-
-    return;
-  }
-
+  const r=await client.from("shoe_models").delete().eq("id",id);
+  if(r.error){alert("Could not delete model:\n\n"+r.error.message);return;}
 
   toast("Model deleted.");
-
-  loadModels();
-
+  await loadData();
 }
 
-
-/* =========================================================
-   SECURITY
-   ========================================================= */
-
-function escapeHtml(value){
-
-  return String(value)
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-
+function manageSizes(id){
+  const m=modelsCache.find(x=>x.id===id);
+  if(!m)return;
+  managingModelId=id;
+  const current=getModelSizes(id);
+  document.getElementById("sizeModalTitle").textContent=`📏 Sizes — ${m.model_code}`;
+  document.getElementById("sizeModalCurrent").textContent=current.length
+    ? "Current sizes: "+current.join(", ")
+    : "Current sizes: None";
+  buildSizeGrid("modalSizeGrid",current);
+  document.getElementById("sizeModal").classList.add("show");
 }
 
-
-/* ============================================
-   MANAGE SIZES
-============================================ */
-
-async function manageSizes(modelId){
-
-    const { data, error } = await client
-        .from("shoe_sizes")
-        .select("*")
-        .eq("model_id", modelId)
-        .order("size");
-
-    if(error){
-        console.error(error);
-        alert("Error loading sizes.");
-        return;
-    }
-
-    const sizes = data.map(row => row.size).join(", ");
-
-    const newSize = prompt(
-        "Current sizes: " + (sizes || "None") +
-        "\n\nEnter a new size to add:"
-    );
-
-    if(newSize === null) return;
-
-    const size = Number(newSize);
-
-    if(!Number.isInteger(size)){
-        alert("Please enter a valid size.");
-        return;
-    }
-
-    const { error: insertError } = await client
-        .from("shoe_sizes")
-        .insert({
-            model_id: modelId,
-            size: size
-        });
-
-    if(insertError){
-        console.error(insertError);
-        alert("Error adding size.");
-        return;
-    }
-
-    alert("Size " + size + " added successfully.");
-
-}
-  /* =========================================================
-   START
-   ========================================================= */
-
-async function start(){
-
-  document.getElementById("loading")
-    .style.display = "none";
-
-  await loadModels();
-
+async function saveManagedSizes(){
+  if(!managingModelId)return;
+  const sizes=getCheckedSizes("modalSizeGrid");
+  const ok=await replaceSizes(managingModelId,sizes);
+  if(ok){
+    closeSizeModal();
+    toast("Sizes updated successfully!");
+    await loadData();
+  }
 }
 
-start();
+function closeSizeModal(){
+  managingModelId="";
+  document.getElementById("sizeModal").classList.remove("show");
+}
 
+buildSizeGrid("sizeGrid",[]);
+loadData();
 </script>
-
 </body>
 </html>
