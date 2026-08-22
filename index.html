@@ -136,6 +136,16 @@ button.primary{
   cursor:pointer;
 }
 
+button.secondary{
+  background:#eef2f7;
+  color:#172033;
+  border:1px solid #cbd5e1;
+  border-radius:8px;
+  padding:7px 12px;
+  cursor:pointer;
+  font-weight:700;
+}
+
 button.danger{
   background:#dc2626;
   color:white;
@@ -409,6 +419,11 @@ th{
 
     <h2>Model List</h2>
 
+    <input id="modelSearch" type="search"
+      placeholder="🔎 Search model code, name, or color..."
+      oninput="renderModels()"
+      style="width:100%;margin:8px 0 12px;padding:10px;border:1px solid #cbd5e1;border-radius:8px;">
+
     <div class="table-wrap">
 
       <table>
@@ -541,6 +556,8 @@ function toast(message){
    LOAD MODELS
    ========================================================= */
 
+let modelsCache = [];
+
 async function loadModels(){
 
   const {data,error} =
@@ -558,9 +575,10 @@ async function loadModels(){
       "status error";
 
     console.error(error);
-
     return;
   }
+
+  modelsCache = data || [];
 
   document.getElementById("status").textContent =
     "☁️ Cloud connected";
@@ -569,57 +587,52 @@ async function loadModels(){
     "status ok";
 
   document.getElementById("modelCount").textContent =
-    data.length;
+    modelsCache.length;
 
-  const table =
-    document.getElementById("modelsTable");
+  renderModels();
+}
 
-  if(!data.length){
+function renderModels(){
+
+  const table = document.getElementById("modelsTable");
+  const search = (document.getElementById("modelSearch")?.value || "")
+    .trim().toLowerCase();
+
+  const filtered = modelsCache.filter(model => {
+    const code = String(model.model_code || "").toLowerCase();
+    const name = String(model.model_name || "").toLowerCase();
+    const color = String(model.color || "").toLowerCase();
+    return !search || code.includes(search) || name.includes(search) || color.includes(search);
+  });
+
+  if(!filtered.length){
 
     table.innerHTML =
-      `<tr>
-        <td colspan="7" class="empty">
-          No shoe models yet.
-        </td>
-      </tr>`;
+      `<tr><td colspan="7" class="empty">${
+        modelsCache.length ? "No matching shoe models." : "No shoe models yet."
+      }</td></tr>`;
 
     return;
   }
 
-  table.innerHTML =
-    data.map(model => `
+  table.innerHTML = filtered.map(model => `
 
-      <tr>
+    <tr>
+      <td>${escapeHtml(model.model_code || "")}</td>
+      <td>${escapeHtml(model.model_name || "")}</td>
+      <td>${escapeHtml(model.color || "")}</td>
+      <td>$${Number(model.cost_price || 0).toFixed(2)}</td>
+      <td>$${Number(model.selling_price || 0).toFixed(2)}</td>
+      <td>${model.minimum_stock ?? 0}</td>
+      <td>
+        <button class="secondary" onclick="editModel('${model.id}')">Edit</button>
+        <button class="secondary" onclick="copyModel('${model.id}')">Copy</button>
+        <button class="secondary" onclick="manageSizes('${model.id}')">Sizes</button>
+        <button class="danger" onclick="deleteModel('${model.id}')">Delete</button>
+      </td>
+    </tr>
 
-        <td>${escapeHtml(model.model_code || "")}</td>
-
-        <td>${escapeHtml(model.model_name || "")}</td>
-
-        <td>${escapeHtml(model.color || "")}</td>
-
-        <td>$${Number(model.cost_price || 0).toFixed(2)}</td>
-
-        <td>$${Number(model.selling_price || 0).toFixed(2)}</td>
-
-        <td>${model.minimum_stock ?? 0}</td>
-
-        <td>
-<button
-    onclick="manageSizes('${model.id}')">
-    Sizes
-</button>
-
-<button
-    class="danger"
-    onclick="deleteModel('${model.id}')">
-    Delete
-</button>
-        </td>
-
-      </tr>
-
-    `).join("");
-
+  `).join("");
 }
 
 
@@ -633,62 +646,130 @@ document
 
     e.preventDefault();
 
+    const editingId = this.dataset.editingId || "";
+
     const model = {
-
-      model_code:
-        document.getElementById("modelCode").value.trim(),
-
-      model_name:
-        document.getElementById("modelName").value.trim(),
-
-      color:
-        document.getElementById("modelColor").value.trim(),
-
-      image_url:
-        document.getElementById("modelImage").value.trim() || null,
-
-      cost_price:
-        Number(document.getElementById("costPrice").value || 0),
-
-      selling_price:
-        Number(document.getElementById("sellingPrice").value || 0),
-
-      minimum_stock:
-        Number(document.getElementById("minimumStock").value || 0)
-
+      model_code: document.getElementById("modelCode").value.trim(),
+      model_name: document.getElementById("modelName").value.trim(),
+      color: document.getElementById("modelColor").value.trim(),
+      image_url: document.getElementById("modelImage").value.trim() || null,
+      cost_price: Number(document.getElementById("costPrice").value || 0),
+      selling_price: Number(document.getElementById("sellingPrice").value || 0),
+      minimum_stock: Number(document.getElementById("minimumStock").value || 0)
     };
 
+    const result = editingId
+      ? await client.from("shoe_models").update(model).eq("id", editingId)
+      : await client.from("shoe_models").insert(model);
 
-    const {error} =
-      await client
-        .from("shoe_models")
-        .insert(model);
-
-
-    if(error){
+    if(result.error){
 
       alert(
-        "Could not add model:\n\n" +
-        error.message
+        (editingId ? "Could not update model:\n\n" : "Could not add model:\n\n") +
+        result.error.message
       );
 
-      console.error(error);
-
+      console.error(result.error);
       return;
     }
 
-
-    toast("Model added successfully!");
+    toast(editingId ? "Model updated successfully!" : "Model added successfully!");
 
     this.reset();
+    delete this.dataset.editingId;
 
     document.getElementById("costPrice").value = 0;
     document.getElementById("sellingPrice").value = 0;
     document.getElementById("minimumStock").value = 1;
 
-    loadModels();
+    this.querySelector("button[type='submit']").textContent = "+ Add Model";
+
+    await loadModels();
 
   });
+
+
+/* =========================================================
+   EDIT MODEL
+   ========================================================= */
+
+function editModel(id){
+
+  const model = modelsCache.find(item => item.id === id);
+
+  if(!model){
+    alert("Model not found.");
+    return;
+  }
+
+  document.getElementById("modelCode").value = model.model_code || "";
+  document.getElementById("modelName").value = model.model_name || "";
+  document.getElementById("modelColor").value = model.color || "";
+  document.getElementById("modelImage").value = model.image_url || "";
+  document.getElementById("costPrice").value = model.cost_price ?? 0;
+  document.getElementById("sellingPrice").value = model.selling_price ?? 0;
+  document.getElementById("minimumStock").value = model.minimum_stock ?? 0;
+
+  const form = document.getElementById("modelForm");
+  form.dataset.editingId = id;
+
+  form.querySelector("button[type='submit']").textContent = "Save Changes";
+
+  document.getElementById("models").scrollIntoView({behavior:"smooth"});
+
+}
+
+
+/* =========================================================
+   COPY MODEL
+   ========================================================= */
+
+async function copyModel(id){
+
+  const model = modelsCache.find(item => item.id === id);
+
+  if(!model){
+    alert("Model not found.");
+    return;
+  }
+
+  const newCode = prompt(
+    "Enter the new Model Code:",
+    (model.model_code || "") + "-COPY"
+  );
+
+  if(newCode === null) return;
+
+  const code = newCode.trim();
+
+  if(!code){
+    alert("Model Code is required.");
+    return;
+  }
+
+  const copiedModel = {
+    model_code: code,
+    model_name: model.model_name || "",
+    color: model.color || "",
+    image_url: model.image_url || null,
+    cost_price: Number(model.cost_price || 0),
+    selling_price: Number(model.selling_price || 0),
+    minimum_stock: Number(model.minimum_stock || 0)
+  };
+
+  const {error} = await client
+    .from("shoe_models")
+    .insert(copiedModel);
+
+  if(error){
+    alert("Could not copy model:\n\n" + error.message);
+    return;
+  }
+
+  toast("Model copied successfully!");
+  await loadModels();
+
+}
 
 
 /* =========================================================
