@@ -604,11 +604,16 @@ async function loadModels(){
         <td>${model.minimum_stock ?? 0}</td>
 
         <td>
-          <button
-            class="danger"
-            onclick="deleteModel('${model.id}')">
-            Delete
-          </button>
+<button
+    onclick="manageSizes('${model.id}')">
+    Sizes
+</button>
+
+<button
+    class="danger"
+    onclick="deleteModel('${model.id}')">
+    Delete
+</button>
         </td>
 
       </tr>
@@ -740,7 +745,57 @@ function escapeHtml(value){
 }
 
 
-/* =========================================================
+/* ============================================
+   MANAGE SIZES
+============================================ */
+
+async function manageSizes(modelId){
+
+    const { data, error } = await client
+        .from("shoe_sizes")
+        .select("*")
+        .eq("model_id", modelId)
+        .order("size");
+
+    if(error){
+        console.error(error);
+        alert("Error loading sizes.");
+        return;
+    }
+
+    const sizes = data.map(row => row.size).join(", ");
+
+    const newSize = prompt(
+        "Current sizes: " + (sizes || "None") +
+        "\n\nEnter a new size to add:"
+    );
+
+    if(newSize === null) return;
+
+    const size = Number(newSize);
+
+    if(!Number.isInteger(size)){
+        alert("Please enter a valid size.");
+        return;
+    }
+
+    const { error: insertError } = await client
+        .from("shoe_sizes")
+        .insert({
+            model_id: modelId,
+            size: size
+        });
+
+    if(insertError){
+        console.error(insertError);
+        alert("Error adding size.");
+        return;
+    }
+
+    alert("Size " + size + " added successfully.");
+
+}
+  /* =========================================================
    START
    ========================================================= */
 
