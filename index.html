@@ -1,522 +1,160 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kids Shoe Manager V6</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Little Steps — Shoe Business Manager</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#f4f6fa;color:#172033}
-header{background:#111827;color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:15px}
-header h1{margin:0;font-size:21px}
-header small{color:#cbd5e1}
-nav{display:flex;gap:8px;background:#fff;border-bottom:1px solid #ddd;padding:10px 14px;overflow:auto}
-nav button{border:0;padding:9px 14px;border-radius:8px;background:#eef2f7;font-weight:700;cursor:pointer;white-space:nowrap}
-nav button.active{background:#2563eb;color:#fff}
-main{max-width:1500px;margin:auto;padding:18px}
-.page{display:none}.page.active{display:block}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:18px}
-.card,.panel{background:#fff;border:1px solid #e1e6ee;border-radius:12px;padding:16px;box-shadow:0 2px 7px #00000008}
-.card small{color:#64748b;font-weight:700}.value{font-size:28px;font-weight:800;margin-top:5px}
-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f7f4ee;color:#172033}
+header{background:#1f2a44;color:#fff;padding:18px 22px;display:flex;justify-content:space-between;align-items:center}
+header h1{margin:0;font-size:22px}header small{color:#dbe4f0}
+nav{display:flex;gap:7px;background:#fff;border-bottom:1px solid #ddd;padding:10px 16px;overflow:auto}
+nav button{border:0;padding:10px 14px;border-radius:9px;background:#eef1f6;font-weight:700;cursor:pointer;white-space:nowrap}
+nav button.active{background:#ef6a6a;color:#fff}
+main{max-width:1500px;margin:auto;padding:20px}.page{display:none}.page.active{display:block}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
+.card,.panel{background:#fff;border:1px solid #e3ded6;border-radius:13px;padding:16px;box-shadow:0 2px 8px #00000009}
+.value{font-size:27px;font-weight:800;margin-top:5px}.muted{color:#64748b;font-size:13px}
+.notice{background:#eaf7f0;color:#17633e;padding:12px;border-radius:9px;margin-bottom:14px}
+form{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px}
 label{font-size:13px;font-weight:700;color:#475569}
 input,select{width:100%;margin-top:5px;padding:10px;border:1px solid #cbd5e1;border-radius:8px;background:#fff}
-button.primary{background:#2563eb;color:#fff;border:0;border-radius:8px;padding:10px 16px;font-weight:700;cursor:pointer}
-button.secondary{background:#eef2f7;color:#172033;border:1px solid #cbd5e1;border-radius:8px;padding:7px 12px;cursor:pointer;font-weight:700}
-button.danger{background:#dc2626;color:#fff;border:0;border-radius:8px;padding:7px 12px;cursor:pointer}
-button.warning{background:#f59e0b;color:#fff;border:0;border-radius:8px;padding:7px 12px;cursor:pointer}
-table{width:100%;border-collapse:collapse;margin-top:15px}
-th,td{padding:10px;border-bottom:1px solid #e5e7eb;text-align:left;font-size:14px}
-th{background:#f8fafc}
-.notice{background:#eff6ff;color:#1e40af;padding:12px;border-radius:8px;margin-bottom:15px}
-.status{font-size:13px;font-weight:700}.ok{color:#15803d}.error{color:#dc2626}
-.empty{text-align:center;color:#64748b;padding:30px}
-#loading{position:fixed;inset:0;background:#fff;display:flex;align-items:center;justify-content:center;z-index:100;font-weight:700}
-#toast{position:fixed;right:18px;bottom:18px;background:#111827;color:#fff;padding:11px 15px;border-radius:8px;display:none;z-index:200}
-.image-preview{width:90px;height:90px;border:1px dashed #cbd5e1;border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#f8fafc;color:#64748b;font-size:12px;text-align:center}
-.image-preview img{width:100%;height:100%;object-fit:cover}
-.model-image{width:58px;height:58px;object-fit:cover;border-radius:9px;border:1px solid #e2e8f0;background:#f8fafc}
-.size-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:8px;margin-top:8px}
-.size-box{display:flex;align-items:center;justify-content:center;gap:5px;border:1px solid #cbd5e1;border-radius:8px;padding:8px;background:#fff;cursor:pointer}
-.size-box input{width:auto;margin:0}.size-box:has(input:checked){background:#dbeafe;border-color:#2563eb}
-.actions{display:flex;gap:6px;flex-wrap:wrap}
-.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;z-index:300;padding:15px}
-.modal.show{display:flex}.modal-card{background:#fff;border-radius:14px;padding:20px;width:min(650px,100%);max-height:90vh;overflow:auto}
-.modal-card h3{margin-top:0}
-.muted{color:#64748b;font-size:13px}
-@media(max-width:700px){
- header{align-items:flex-start;flex-direction:column}main{padding:12px}.panel{padding:12px}
- .table-wrap{overflow:auto}table{min-width:900px}
-}
+button.primary{border:0;background:#ef6a6a;color:#fff;padding:10px 15px;border-radius:8px;font-weight:700;cursor:pointer}
+button.secondary{border:1px solid #cbd5e1;background:#fff;padding:8px 12px;border-radius:8px;font-weight:700;cursor:pointer}
+button.danger{border:0;background:#dc3545;color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer}
+table{width:100%;border-collapse:collapse;margin-top:14px}th,td{padding:9px;border-bottom:1px solid #e5e7eb;text-align:left;font-size:14px}th{background:#f8fafc}
+.table-wrap{overflow:auto}.size-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(65px,1fr));gap:8px;margin-top:8px}
+.size-box{display:flex;align-items:center;justify-content:center;gap:4px;border:1px solid #cbd5e1;border-radius:8px;padding:8px;background:#fff;cursor:pointer}
+.size-box input{width:auto;margin:0}.size-box:has(input:checked){background:#eaf7f0;border-color:#22c55e}
+.actions{display:flex;gap:5px;flex-wrap:wrap}.model-image{width:62px;height:62px;object-fit:cover;border-radius:9px;border:1px solid #ddd}
+.empty{text-align:center;color:#64748b;padding:28px}.status{font-weight:700;font-size:13px}.ok{color:#86efac}.bad{color:#fecaca}
+.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:15px;z-index:50}
+.modal.show{display:flex}.modal-card{background:#fff;border-radius:14px;padding:20px;width:min(900px,100%);max-height:92vh;overflow:auto}
+@media(max-width:700px){header{align-items:flex-start;flex-direction:column}main{padding:12px}table{min-width:900px}}
 </style>
 </head>
-
 <body>
-<div id="loading">Connecting to your cloud database...</div>
-
-<header>
-  <div>
-    <h1>👟 Kids Shoe Manager V6</h1>
-    <small>Cloud inventory — phone + computer</small>
-  </div>
-  <div id="status" class="status">Connecting...</div>
-</header>
-
+<header><div><h1>👟 Little Steps — Shoe Business Manager</h1><small>Cloud inventory • phone + computer</small></div><div id="status" class="status">Connecting...</div></header>
 <nav>
-  <button class="active" onclick="showPage('dashboard',this)">Dashboard</button>
-  <button onclick="showPage('models',this)">Models</button>
-  <button onclick="showPage('stock',this)">Stock</button>
-  <button onclick="showPage('sales',this)">Sales</button>
+<button class="active" onclick="page('dashboard',this)">Dashboard</button>
+<button onclick="page('models',this)">Models</button>
+<button onclick="page('stock',this)">Stock In</button>
+<button onclick="page('sales',this)">Stock Out / Sales</button>
+<button onclick="page('correction',this)">Stock Correction</button>
+<button onclick="page('reports',this)">Reports</button>
+<button onclick="page('backup',this)">Import / Export</button>
 </nav>
-
 <main>
 <section id="dashboard" class="page active">
-  <div class="cards">
-    <div class="card"><small>Models</small><div class="value" id="modelCount">0</div></div>
-    <div class="card"><small>Sizes</small><div class="value" id="sizeCount">0</div></div>
-    <div class="card"><small>Stock Records</small><div class="value" id="stockCount">0</div></div>
-    <div class="card"><small>Sales</small><div class="value" id="saleCount">0</div></div>
-  </div>
-  <div class="panel">
-    <h2>Welcome to Kids Shoe Manager V6</h2>
-    <p>Cloud inventory for your shoe business. Models, pictures and sizes are stored with your Supabase database.</p>
-    <div class="notice">Start from <b>Models</b>. You can add a picture, choose the sizes, edit a model, copy a model, or manage its sizes.</div>
-  </div>
+<div class="cards">
+<div class="card"><div class="muted">Models</div><div class="value" id="dModels">0</div></div>
+<div class="card"><div class="muted">Pairs in Stock</div><div class="value" id="dStock">0</div></div>
+<div class="card"><div class="muted">Revenue</div><div class="value" id="dRevenue">$0</div></div>
+<div class="card"><div class="muted">Gross Profit</div><div class="value" id="dProfit">$0</div></div>
+<div class="card"><div class="muted">Low / Out</div><div class="value" id="dAlerts">0</div></div>
+</div>
+<div class="panel"><h2>Inventory by Model</h2><div id="dashTable"></div></div>
 </section>
 
 <section id="models" class="page">
-  <div class="panel">
-    <h2>👟 Create Shoe Model</h2>
-    <div class="notice">You can add any size you need. Sizes are not limited to 21–36.</div>
-
-    <form id="modelForm">
-      <label>Model Code<input id="modelCode" required placeholder="Example: M001"></label>
-      <label>Model Name<input id="modelName" required placeholder="Example: Sport Kids"></label>
-      <label>Color<input id="modelColor" placeholder="Example: Black"></label>
-      <label>Cost / Pair<input id="costPrice" type="number" step="0.01" min="0" value="0"></label>
-      <label>Selling Price<input id="sellingPrice" type="number" step="0.01" min="0" value="0"></label>
-      <label>Minimum Stock / Size<input id="minimumStock" type="number" min="0" value="1"></label>
-
-      <label>
-        Image
-        <input id="modelImageFile" type="file" accept="image/*">
-      </label>
-
-      <div>
-        <div class="muted">Image preview</div>
-        <div id="imagePreview" class="image-preview">No image selected</div>
-      </div>
-
-      <label style="grid-column:1/-1">
-        Select Initial Sizes
-        <div class="muted">Tick the sizes this model has. You can add more later.</div>
-        <div id="sizeGrid" class="size-grid"></div>
-      </label>
-
-      <div style="display:flex;align-items:end;gap:8px">
-        <button class="primary" id="saveModelBtn" type="submit">+ Create Model</button>
-        <button class="secondary" id="cancelEditBtn" type="button" onclick="cancelEdit()" style="display:none">Cancel Edit</button>
-      </div>
-    </form>
-  </div>
-
-  <div class="panel" style="margin-top:15px">
-    <h2>Model List</h2>
-    <input id="modelSearch" type="search" placeholder="🔎 Search model, code, color..." oninput="renderModels()">
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Image</th><th>Code</th><th>Model</th><th>Color</th>
-            <th>Cost</th><th>Selling</th><th>Minimum</th><th>Sizes</th><th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="modelsTable"></tbody>
-      </table>
-    </div>
-  </div>
+<div class="panel"><h2>👟 Create Shoe Model</h2>
+<div class="notice">Copying the old version's useful functions only: image, flexible sizes, edit, copy, delete and size management. Your cloud database remains the data source.</div>
+<form id="modelForm">
+<label>Model Code<input id="code" required placeholder="M001"></label>
+<label>Model Name<input id="name" required placeholder="Sport Kids"></label>
+<label>Color<input id="color" placeholder="Black"></label>
+<label>Cost / Pair<input id="cost" type="number" step=".01" min="0" value="0"></label>
+<label>Selling Price<input id="price" type="number" step=".01" min="0" value="0"></label>
+<label>Minimum Stock / Size<input id="min" type="number" min="0" value="2"></label>
+<label>Image<input id="image" type="file" accept="image/*"><span id="imageBox"></span></label>
+<div style="grid-column:1/-1"><label>Select Initial Sizes</label><div id="createSizes" class="size-grid"></div></div>
+<div><button class="primary" type="submit">+ Create Model</button> <button class="secondary" type="button" onclick="resetModel()">Clear</button></div>
+</form></div>
+<div class="panel"><div style="display:flex;gap:10px;align-items:center"><h2 style="margin-right:auto">Model List</h2><input id="search" placeholder="Search model/code/color" oninput="renderModels()"></div>
+<div class="table-wrap"><table><thead><tr><th>Image</th><th>Code</th><th>Model</th><th>Color</th><th>Cost</th><th>Sell</th><th>Min</th><th>Sizes</th><th>Action</th></tr></thead><tbody id="modelsTable"></tbody></table></div></div>
 </section>
 
 <section id="stock" class="page">
-  <div class="panel">
-    <h2>📦 Stock</h2>
-    <div class="empty">Stock-in and stock-out will be connected after the Models system is stable.</div>
-  </div>
+<div class="panel"><h2>📦 Stock In — Many Sizes</h2>
+<form id="stockForm"><label>Model<select id="stockModel" required></select></label><label>Date<input id="stockDate" type="date" required></label><label>Supplier<input id="supplier"></label><label>Reference<input id="stockRef"></label>
+<div style="grid-column:1/-1"><div id="stockSizes" class="size-grid"></div></div><button class="primary">Save Stock In</button></form></div>
+<div class="panel"><h2>Stock History</h2><div id="stockHistory"></div></div>
 </section>
 
 <section id="sales" class="page">
-  <div class="panel">
-    <h2>💰 Sales</h2>
-    <div class="empty">Sales will be connected after the Stock system is stable.</div>
-  </div>
+<div class="panel"><h2>🛒 Stock Out / Sale</h2>
+<form id="saleForm"><label>Model<select id="saleModel" required></select></label><label>Date<input id="saleDate" type="date" required></label><label>Customer<input id="customer"></label><label>Payment<select id="payment"><option>Cash</option><option>Transfer</option><option>Credit</option></select></label>
+<div style="grid-column:1/-1"><div id="saleSizes" class="size-grid"></div></div><button class="primary">Save Sale</button></form></div>
+<div class="panel"><h2>Sales History</h2><div id="salesHistory"></div></div>
 </section>
+
+<section id="correction" class="page">
+<div class="panel"><h2>🔄 Stock Correction</h2><div class="notice">Use this when physical stock differs from system stock.</div>
+<form id="correctionForm"><label>Model<select id="corModel" required></select></label><label>Date<input id="corDate" type="date" required></label><label>Reason<input id="corReason" placeholder="Counting error / damaged / found"></label>
+<div style="grid-column:1/-1"><div id="corSizes" class="size-grid"></div></div><button class="primary">Save Correction</button></form></div>
+<div class="panel"><h2>Correction History</h2><div id="corHistory"></div></div>
+</section>
+
+<section id="reports" class="page"><div class="cards"><div class="card"><div class="muted">Purchase Value</div><div class="value" id="rPurchase">$0</div></div><div class="card"><div class="muted">Revenue</div><div class="value" id="rRevenue">$0</div></div><div class="card"><div class="muted">Gross Profit</div><div class="value" id="rProfit">$0</div></div></div><div class="panel"><h2>Monthly Revenue</h2><div id="months"></div></div></section>
+
+<section id="backup" class="page"><div class="panel"><h2>📥 Import / 📤 Export</h2><p class="muted">This transfers data; it does not copy the old local stock automatically.</p><button class="primary" onclick="exportJSON()">Full JSON Backup</button> <button class="secondary" onclick="exportCSV()">Inventory CSV</button><br><br><input id="importFile" type="file" accept=".json,application/json"> <button class="secondary" onclick="importJSON()">Import JSON</button><p id="importMsg" class="muted"></p></div></section>
 </main>
 
 <div id="toast"></div>
-
-<div id="sizeModal" class="modal">
-  <div class="modal-card">
-    <h3 id="sizeModalTitle">Manage Sizes</h3>
-    <p id="sizeModalCurrent" class="muted"></p>
-    <div id="modalSizeGrid" class="size-grid"></div>
-    <div style="display:flex;gap:8px;margin-top:15px">
-      <button class="primary" onclick="saveManagedSizes()">Save Sizes</button>
-      <button class="secondary" onclick="closeSizeModal()">Cancel</button>
-    </div>
-  </div>
-</div>
+<div id="editModal" class="modal"><div class="modal-card"><h2>Edit Model</h2><form id="editForm"><input id="editId" type="hidden"><label>Code<input id="editCode" required></label><label>Name<input id="editName" required></label><label>Color<input id="editColor"></label><label>Cost<input id="editCost" type="number" step=".01"></label><label>Selling<input id="editPrice" type="number" step=".01"></label><label>Minimum<input id="editMin" type="number"></label><label>Change Image<input id="editImage" type="file" accept="image/*"></label><div style="grid-column:1/-1"><label>Sizes</label><div id="editSizes" class="size-grid"></div></div><button class="primary">Save Changes</button><button class="secondary" type="button" onclick="closeEdit()">Cancel</button></form></div></div>
 
 <script>
-const SUPABASE_URL = "https://iwhayhorchwcfcqlkdri.supabase.co";
-const SUPABASE_KEY = "sb_publishable_VG-IfE2aD-N3Q24dg2OrIQ_QLX5cXPd";
-const client = supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const URL='https://iwhayhorchwcfcqlkdri.supabase.co',KEY='sb_publishable_VG-IfE2aD-N3Q24dg2OrIQ_QLX5cXPd',db=supabase.createClient(URL,KEY);
+let models=[],sizes=[],stock=[],sales=[],corrections=[];
+const S=Array.from({length:31},(_,i)=>i+21),today=new Date().toISOString().slice(0,10);
+document.querySelectorAll('input[type=date]').forEach(x=>x.value=today);
 
-let modelsCache=[];
-let sizesCache=[];
-let editingId="";
-let managingModelId="";
+function page(id,b){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));if(b)b.classList.add('active');if(id==='stock')renderStock();if(id==='sales')renderSales();if(id==='correction')renderCorrection();if(id==='reports')renderReports()}
+function msg(t){let x=document.getElementById('toast');x.textContent=t;x.style.display='block';setTimeout(()=>x.style.display='none',2200)}
+function esc(v){return String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#039;")}
+function grid(id,sel=[]){let q=document.getElementById(id),set=new Set(sel.map(Number));q.innerHTML=S.map(n=>`<label class="size-box"><input type="checkbox" value="${n}" ${set.has(n)?'checked':''}>${n}</label>`).join('')}
+function checked(id){return [...document.querySelectorAll('#'+id+' input:checked')].map(x=>+x.value)}
+function ms(id){return sizes.filter(x=>x.model_id===id).map(x=>+x.size).sort((a,b)=>a-b)}
+function setStatus(t,good){let x=document.getElementById('status');x.textContent=t;x.className='status '+(good?'ok':'bad')}
 
-const ALL_SIZES = Array.from({length:25},(_,i)=>i+21);
-
-function showPage(id,button){
-  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-  document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
-  if(button) button.classList.add("active");
+async function load(){
+ try{
+  let a=await db.from('shoe_models').select('*').order('model_code');if(a.error)throw a.error;models=a.data||[];
+  let b=await db.from('shoe_sizes').select('id,model_id,size').order('size');if(!b.error)sizes=b.data||[];
+  let c=await db.from('current_stock').select('*');if(!c.error)stock=c.data||[];
+  let d=await db.from('sales').select('*').order('created_at',{ascending:false});if(!d.error)sales=d.data||[];
+  let e=await db.from('stock_corrections').select('*').order('created_at',{ascending:false});if(!e.error)corrections=e.data||[];
+  setStatus('☁️ Cloud connected',true);document.getElementById('dModels').textContent=models.length;renderModels();fillSelects();renderDashboard()
+ }catch(e){console.error(e);setStatus('❌ Database error',false);alert('Cloud connection error: '+e.message)}
 }
-
-function toast(message){
-  const el=document.getElementById("toast");
-  el.textContent=message; el.style.display="block";
-  setTimeout(()=>el.style.display="none",2500);
-}
-
-function escapeHtml(value){
-  return String(value ?? "")
-    .replaceAll("&","&amp;").replaceAll("<","&lt;")
-    .replaceAll(">","&gt;").replaceAll('"',"&quot;")
-    .replaceAll("'","&#039;");
-}
-
-function buildSizeGrid(containerId,selected=[]){
-  const box=document.getElementById(containerId);
-  const selectedSet=new Set(selected.map(Number));
-  box.innerHTML=ALL_SIZES.map(size=>`
-    <label class="size-box">
-      <input type="checkbox" value="${size}" ${selectedSet.has(size)?"checked":""}>
-      ${size}
-    </label>
-  `).join("");
-}
-
-function getCheckedSizes(containerId){
-  return [...document.querySelectorAll(`#${containerId} input:checked`)].map(x=>Number(x.value));
-}
-
-async function loadData(){
-  const modelResult=await client.from("shoe_models").select("*").order("model_code");
-  if(modelResult.error){
-    setStatus("❌ Database error","error");
-    console.error(modelResult.error);
-    document.getElementById("loading").style.display="none";
-    return;
-  }
-  modelsCache=modelResult.data||[];
-
-  const sizeResult=await client.from("shoe_sizes").select("id,model_id,size").order("size");
-  if(!sizeResult.error) sizesCache=sizeResult.data||[];
-  else console.warn("shoe_sizes:",sizeResult.error);
-
-  document.getElementById("modelCount").textContent=modelsCache.length;
-  document.getElementById("sizeCount").textContent=sizesCache.length;
-
-  let stockCount=0;
-  const stockResult=await client.from("current_stock").select("*");
-  if(!stockResult.error) stockCount=(stockResult.data||[]).length;
-  document.getElementById("stockCount").textContent=stockCount;
-
-  let saleCount=0;
-  const saleResult=await client.from("sales").select("*");
-  if(!saleResult.error) saleCount=(saleResult.data||[]).length;
-  document.getElementById("saleCount").textContent=saleCount;
-
-  setStatus("☁️ Cloud connected","ok");
-  renderModels();
-  document.getElementById("loading").style.display="none";
-}
-
-function setStatus(text,cls){
-  const el=document.getElementById("status");
-  el.textContent=text;
-  el.className="status "+cls;
-}
-
-function getModelSizes(modelId){
-  return sizesCache.filter(x=>x.model_id===modelId).map(x=>Number(x.size)).sort((a,b)=>a-b);
-}
-
-function renderModels(){
-  const table=document.getElementById("modelsTable");
-  const search=(document.getElementById("modelSearch").value||"").trim().toLowerCase();
-
-  const data=modelsCache.filter(m=>{
-    const text=[m.model_code,m.model_name,m.color].map(x=>String(x||"").toLowerCase()).join(" ");
-    return !search || text.includes(search);
-  });
-
-  if(!data.length){
-    table.innerHTML=`<tr><td colspan="9" class="empty">${modelsCache.length?"No matching models.":"No shoe models yet. Create one above."}</td></tr>`;
-    return;
-  }
-
-  table.innerHTML=data.map(m=>{
-    const sizes=getModelSizes(m.id);
-    const image=m.image_url
-      ? `<img class="model-image" src="${escapeHtml(m.image_url)}" alt="shoe">`
-      : `<div class="model-image" style="display:flex;align-items:center;justify-content:center;font-size:11px;color:#64748b">No image</div>`;
-
-    return `<tr>
-      <td>${image}</td>
-      <td>${escapeHtml(m.model_code)}</td>
-      <td>${escapeHtml(m.model_name)}</td>
-      <td>${escapeHtml(m.color)}</td>
-      <td>$${Number(m.cost_price||0).toFixed(2)}</td>
-      <td>$${Number(m.selling_price||0).toFixed(2)}</td>
-      <td>${m.minimum_stock ?? 0}</td>
-      <td>${sizes.length?sizes.join(", "):"None"}</td>
-      <td>
-        <div class="actions">
-          <button class="secondary" onclick="editModel('${m.id}')">✏️ Edit</button>
-          <button class="secondary" onclick="copyModel('${m.id}')">📋 Copy</button>
-          <button class="secondary" onclick="manageSizes('${m.id}')">📏 Sizes</button>
-          <button class="danger" onclick="deleteModel('${m.id}')">Delete</button>
-        </div>
-      </td>
-    </tr>`;
-  }).join("");
-}
-
-document.getElementById("modelImageFile").addEventListener("change",async e=>{
-  const file=e.target.files?.[0];
-  if(!file){document.getElementById("imagePreview").innerHTML="No image selected";return;}
-  try{
-    const data=await compressImage(file);
-    document.getElementById("imagePreview").innerHTML=`<img src="${data}" alt="preview">`;
-    document.getElementById("modelImageFile").dataset.dataUrl=data;
-  }catch(err){
-    alert("Could not read this image.");
-    console.error(err);
-  }
-});
-
-function compressImage(file){
-  return new Promise((resolve,reject)=>{
-    const reader=new FileReader();
-    reader.onload=()=>{
-      const img=new Image();
-      img.onload=()=>{
-        const max=900;
-        let w=img.width,h=img.height;
-        if(w>max||h>max){
-          if(w>h){h=Math.round(h*max/w);w=max}
-          else{w=Math.round(w*max/h);h=max}
-        }
-        const canvas=document.createElement("canvas");
-        canvas.width=w;canvas.height=h;
-        canvas.getContext("2d").drawImage(img,0,0,w,h);
-        resolve(canvas.toDataURL("image/jpeg",0.78));
-      };
-      img.onerror=reject;
-      img.src=reader.result;
-    };
-    reader.onerror=reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-document.getElementById("modelForm").addEventListener("submit",async e=>{
-  e.preventDefault();
-
-  const code=document.getElementById("modelCode").value.trim();
-  const name=document.getElementById("modelName").value.trim();
-  if(!code||!name){alert("Model Code and Model Name are required.");return;}
-
-  const model={
-    model_code:code,
-    model_name:name,
-    color:document.getElementById("modelColor").value.trim(),
-    image_url:document.getElementById("modelImageFile").dataset.dataUrl || null,
-    cost_price:Number(document.getElementById("costPrice").value||0),
-    selling_price:Number(document.getElementById("sellingPrice").value||0),
-    minimum_stock:Number(document.getElementById("minimumStock").value||0)
-  };
-
-  if(editingId && !model.image_url){
-    const old=modelsCache.find(x=>x.id===editingId);
-    model.image_url=old?.image_url||null;
-  }
-
-  const result=editingId
-    ? await client.from("shoe_models").update(model).eq("id",editingId)
-    : await client.from("shoe_models").insert(model).select().single();
-
-  if(result.error){
-    alert("Could not save model:\n\n"+result.error.message);
-    console.error(result.error);
-    return;
-  }
-
-  const savedId=editingId || result.data.id;
-  const selectedSizes=getCheckedSizes("sizeGrid");
-
-  if(!editingId){
-    const rows=selectedSizes.map(size=>({model_id:savedId,size}));
-    if(rows.length){
-      const sr=await client.from("shoe_sizes").insert(rows);
-      if(sr.error){alert("Model saved, but sizes could not be saved:\n\n"+sr.error.message);}
-    }
-  }else{
-    await replaceSizes(savedId,selectedSizes);
-  }
-
-  toast(editingId?"Model updated successfully!":"Model created successfully!");
-  cancelEdit();
-  await loadData();
-  showPage("models",document.querySelectorAll("nav button")[1]);
-});
-
-async function replaceSizes(modelId,sizes){
-  const del=await client.from("shoe_sizes").delete().eq("model_id",modelId);
-  if(del.error){alert("Could not update sizes:\n\n"+del.error.message);return false;}
-  if(sizes.length){
-    const ins=await client.from("shoe_sizes").insert(sizes.map(size=>({model_id:modelId,size})));
-    if(ins.error){alert("Could not save sizes:\n\n"+ins.error.message);return false;}
-  }
-  return true;
-}
-
-function editModel(id){
-  const m=modelsCache.find(x=>x.id===id);
-  if(!m)return;
-
-  editingId=id;
-  document.getElementById("modelCode").value=m.model_code||"";
-  document.getElementById("modelName").value=m.model_name||"";
-  document.getElementById("modelColor").value=m.color||"";
-  document.getElementById("costPrice").value=m.cost_price??0;
-  document.getElementById("sellingPrice").value=m.selling_price??0;
-  document.getElementById("minimumStock").value=m.minimum_stock??1;
-
-  const file=document.getElementById("modelImageFile");
-  file.value="";
-  delete file.dataset.dataUrl;
-
-  document.getElementById("imagePreview").innerHTML=m.image_url
-    ? `<img src="${escapeHtml(m.image_url)}" alt="current image">`
-    : "No image";
-
-  buildSizeGrid("sizeGrid",getModelSizes(id));
-  document.getElementById("saveModelBtn").textContent="💾 Save Changes";
-  document.getElementById("cancelEditBtn").style.display="inline-block";
-  document.getElementById("modelCode").focus();
-  window.scrollTo({top:0,behavior:"smooth"});
-}
-
-function cancelEdit(){
-  editingId="";
-  const form=document.getElementById("modelForm");
-  form.reset();
-  document.getElementById("costPrice").value=0;
-  document.getElementById("sellingPrice").value=0;
-  document.getElementById("minimumStock").value=1;
-  document.getElementById("imagePreview").innerHTML="No image selected";
-  delete document.getElementById("modelImageFile").dataset.dataUrl;
-  buildSizeGrid("sizeGrid",[]);
-  document.getElementById("saveModelBtn").textContent="+ Create Model";
-  document.getElementById("cancelEditBtn").style.display="none";
-}
-
-async function copyModel(id){
-  const m=modelsCache.find(x=>x.id===id);
-  if(!m)return;
-
-  const newCode=prompt("Enter the new Model Code:",m.model_code+"-COPY");
-  if(newCode===null)return;
-  if(!newCode.trim()){alert("Model Code is required.");return;}
-
-  const newName=prompt("Enter the new Model Name:",m.model_name+" Copy");
-  if(newName===null)return;
-
-  const insert={
-    model_code:newCode.trim(),
-    model_name:newName.trim(),
-    color:m.color||"",
-    image_url:m.image_url||null,
-    cost_price:Number(m.cost_price||0),
-    selling_price:Number(m.selling_price||0),
-    minimum_stock:Number(m.minimum_stock||0)
-  };
-
-  const r=await client.from("shoe_models").insert(insert).select().single();
-  if(r.error){alert("Could not copy model:\n\n"+r.error.message);return;}
-
-  const oldSizes=getModelSizes(id);
-  if(oldSizes.length){
-    const sr=await client.from("shoe_sizes").insert(oldSizes.map(size=>({model_id:r.data.id,size})));
-    if(sr.error)console.error(sr.error);
-  }
-
-  toast("Model copied successfully!");
-  await loadData();
-}
-
-async function deleteModel(id){
-  const m=modelsCache.find(x=>x.id===id);
-  if(!m)return;
-
-  if(!confirm(`Delete model "${m.model_code} — ${m.model_name}"?\n\nIts sizes will also be removed.`))return;
-
-  const r=await client.from("shoe_models").delete().eq("id",id);
-  if(r.error){alert("Could not delete model:\n\n"+r.error.message);return;}
-
-  toast("Model deleted.");
-  await loadData();
-}
-
-function manageSizes(id){
-  const m=modelsCache.find(x=>x.id===id);
-  if(!m)return;
-  managingModelId=id;
-  const current=getModelSizes(id);
-  document.getElementById("sizeModalTitle").textContent=`📏 Sizes — ${m.model_code}`;
-  document.getElementById("sizeModalCurrent").textContent=current.length
-    ? "Current sizes: "+current.join(", ")
-    : "Current sizes: None";
-  buildSizeGrid("modalSizeGrid",current);
-  document.getElementById("sizeModal").classList.add("show");
-}
-
-async function saveManagedSizes(){
-  if(!managingModelId)return;
-  const sizes=getCheckedSizes("modalSizeGrid");
-  const ok=await replaceSizes(managingModelId,sizes);
-  if(ok){
-    closeSizeModal();
-    toast("Sizes updated successfully!");
-    await loadData();
-  }
-}
-
-function closeSizeModal(){
-  managingModelId="";
-  document.getElementById("sizeModal").classList.remove("show");
-}
-
-buildSizeGrid("sizeGrid",[]);
-loadData();
+function renderDashboard(){let total=stock.reduce((a,x)=>a+(+x.quantity||0),0),revenue=sales.reduce((a,x)=>a+(+x.total_amount||0),0),profit=sales.reduce((a,x)=>a+(+x.profit||0),0);dStock.textContent=total;dRevenue.textContent='$'+revenue.toFixed(2);dProfit.textContent='$'+profit.toFixed(2);dAlerts.textContent=stock.filter(x=>(+x.quantity||0)<=0).length;dashTable.innerHTML='<table><tr><th>Model</th><th>Pairs</th></tr>'+models.map(m=>{let q=stock.filter(x=>x.model_id===m.id).reduce((a,x)=>a+(+x.quantity||0),0);return `<tr><td>${esc(m.model_code)} — ${esc(m.model_name)}</td><td>${q}</td></tr>`}).join('')+'</table>'}
+function fillSelects(){['stockModel','saleModel','corModel'].forEach(id=>{let x=document.getElementById(id);x.innerHTML='<option value="">Select model</option>'+models.map(m=>`<option value="${m.id}">${esc(m.model_code)} — ${esc(m.model_name)}</option>`).join('');x.onchange=()=>sizeInputs(id)});sizeInputs('stockModel');sizeInputs('saleModel');sizeInputs('corModel')}
+function sizeInputs(id){let map={stockModel:'stockSizes',saleModel:'saleSizes',corModel:'corSizes'},box=document.getElementById(map[id]),m=models.find(x=>x.id===document.getElementById(id).value);if(!m){box.innerHTML='';return}let z=ms(m.id);box.innerHTML=z.map(n=>{let q=stock.find(x=>x.model_id===m.id&&+x.size===n)?.quantity||0;return `<label class="size-box" style="display:block"><b>Size ${n}</b><small>Current: ${q}</small><input class="qty" data-size="${n}" type="number" min="0" value="0" style="width:100%"></label>`}).join('')}
+async function compress(file){return new Promise((res,rej)=>{let r=new FileReader;r.onload=()=>{let i=new Image;i.onload=()=>{let max=900,w=i.width,h=i.height;if(w>max||h>max){if(w>h){h=h*max/w;w=max}else{w=w*max/h;h=max}}let c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(i,0,0,w,h);res(c.toDataURL('image/jpeg',.78))};i.onerror=rej;i.src=r.result};r.onerror=rej;r.readAsDataURL(file)})}
+image.onchange=async e=>{let f=e.target.files[0];if(f)imageBox.innerHTML=`<img class="preview" src="${await compress(f)}">`}
+modelForm.onsubmit=async e=>{e.preventDefault();let f=image.files[0],m={model_code:code.value.trim(),model_name:name.value.trim(),color:color.value.trim(),cost_price:+cost.value||0,selling_price:+price.value||0,minimum_stock:+min.value||0,image_url:f?await compress(f):null};if(!m.model_code||!m.model_name)return alert('Code and name are required');let r=await db.from('shoe_models').insert(m).select().single();if(r.error)return alert(r.error.message);let z=checked('createSizes');if(z.length){let q=await db.from('shoe_sizes').insert(z.map(size=>({model_id:r.data.id,size})));if(q.error)alert(q.error.message)}resetModel();msg('Model created');await load()}
+function resetModel(){modelForm.reset();min.value=2;grid('createSizes');imageBox.innerHTML=''}
+async function replaceSizes(id,z){await db.from('shoe_sizes').delete().eq('model_id',id);if(z.length)await db.from('shoe_sizes').insert(z.map(size=>({model_id:id,size})))}
+function renderModels(){let q=(search.value||'').toLowerCase();modelsTable.innerHTML=models.filter(m=>[m.model_code,m.model_name,m.color].join(' ').toLowerCase().includes(q)).map(m=>`<tr><td>${m.image_url?`<img class="model-image" src="${esc(m.image_url)}">`:'—'}</td><td>${esc(m.model_code)}</td><td>${esc(m.model_name)}</td><td>${esc(m.color)}</td><td>$${(+m.cost_price||0).toFixed(2)}</td><td>$${(+m.selling_price||0).toFixed(2)}</td><td>${m.minimum_stock}</td><td>${ms(m.id).join(', ')}</td><td><div class="actions"><button class="secondary" onclick="editModel('${m.id}')">Edit</button><button class="secondary" onclick="copyModel('${m.id}')">Copy</button><button class="secondary" onclick="manageSizes('${m.id}')">Sizes</button><button class="danger" onclick="delModel('${m.id}')">Delete</button></div></td></tr>`).join('')||'<tr><td colspan="9" class="empty">No models yet.</td></tr>'}
+function editModel(id){let m=models.find(x=>x.id===id);if(!m)return;editId.value=m.id;editCode.value=m.model_code;editName.value=m.model_name;editColor.value=m.color||'';editCost.value=m.cost_price||0;editPrice.value=m.selling_price||0;editMin.value=m.minimum_stock||0;grid('editSizes',ms(id));editModal.classList.add('show')}
+editForm.onsubmit=async e=>{e.preventDefault();let id=editId.value,m=models.find(x=>x.id===id),f=editImage.files[0],r=await db.from('shoe_models').update({model_code:editCode.value.trim(),model_name:editName.value.trim(),color:editColor.value.trim(),cost_price:+editCost.value||0,selling_price:+editPrice.value||0,minimum_stock:+editMin.value||0,image_url:f?await compress(f):m.image_url}).eq('id',id);if(r.error)return alert(r.error.message);await replaceSizes(id,checked('editSizes'));closeEdit();msg('Model updated');await load()}
+function closeEdit(){editModal.classList.remove('show')}
+async function copyModel(id){let m=models.find(x=>x.id===id),c=prompt('New model code',m.model_code+'-COPY');if(!c)return;let n=prompt('New model name',m.model_name+' Copy');if(!n)return;let r=await db.from('shoe_models').insert({model_code:c,model_name:n,color:m.color,cost_price:m.cost_price,selling_price:m.selling_price,minimum_stock:m.minimum_stock,image_url:m.image_url}).select().single();if(r.error)return alert(r.error.message);await db.from('shoe_sizes').insert(ms(id).map(size=>({model_id:r.data.id,size})));msg('Model copied');await load()}
+async function delModel(id){if(!confirm('Delete this model and its sizes?'))return;let r=await db.from('shoe_models').delete().eq('id',id);if(r.error)return alert(r.error.message);msg('Model deleted');await load()}
+function manageSizes(id){editModel(id)}
+async function upsertStock(model_id,size,delta){let old=stock.find(x=>x.model_id===model_id&&+x.size===+size);if(old)return db.from('current_stock').update({quantity:(+old.quantity||0)+delta}).eq('id',old.id);return db.from('current_stock').insert({model_id,size:+size,quantity:delta})}
+stockForm.onsubmit=async e=>{e.preventDefault();let model_id=stockModel.value,date=stockDate.value,rows=[...document.querySelectorAll('#stockSizes .qty')].filter(x=>+x.value>0);if(!rows.length)return alert('Enter quantity');for(let x of rows){let q=await upsertStock(model_id,x.dataset.size,+x.value);if(q.error)return alert(q.error.message)}let ins=await db.from('stock_in').insert(rows.map(x=>({model_id,size:+x.dataset.size,quantity:+x.value,date,supplier:supplier.value,reference:stockRef.value})));if(ins.error)console.warn('stock_in table:',ins.error);msg('Stock added');e.target.reset();stockDate.value=today;await load();sizeInputs('stockModel')}
+saleForm.onsubmit=async e=>{e.preventDefault();let model_id=saleModel.value,date=saleDate.value,rows=[...document.querySelectorAll('#saleSizes .qty')].filter(x=>+x.value>0),m=models.find(x=>x.id===model_id);if(!rows.length)return alert('Enter quantity');for(let x of rows){let old=stock.find(y=>y.model_id===model_id&&+y.size===+x.dataset.size),qty=+x.value;if(!old||(+old.quantity||0)<qty)return alert('Not enough stock for size '+x.dataset.size);let r=await db.from('current_stock').update({quantity:+old.quantity-qty}).eq('id',old.id);if(r.error)return alert(r.error.message)}let ins=await db.from('sales').insert(rows.map(x=>({model_id,size:+x.dataset.size,quantity:+x.value,date,customer:customer.value,payment:payment.value,total_amount:(+x.value)*(+m.selling_price||0),profit:(+x.value)*((+m.selling_price||0)-(+m.cost_price||0))})));if(ins.error)return alert(ins.error.message);msg('Sale saved');e.target.reset();saleDate.value=today;await load();sizeInputs('saleModel')}
+async function renderStock(){let r=await db.from('stock_in').select('*').order('date',{ascending:false});if(r.error)return stockHistory.innerHTML='<div class="empty">Stock history table is not available yet.</div>';stockHistory.innerHTML='<table><tr><th>Date</th><th>Model</th><th>Size</th><th>Qty</th><th>Supplier</th><th>Reference</th></tr>'+r.data.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(models.find(m=>m.id===x.model_id)?.model_code||x.model_id)}</td><td>${x.size}</td><td>${x.quantity}</td><td>${esc(x.supplier)}</td><td>${esc(x.reference)}</td></tr>`).join('')+'</table>'}
+async function renderSales(){salesHistory.innerHTML='<table><tr><th>Date</th><th>Model</th><th>Size</th><th>Qty</th><th>Customer</th><th>Total</th><th>Profit</th></tr>'+sales.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(models.find(m=>m.id===x.model_id)?.model_code||x.model_id)}</td><td>${x.size}</td><td>${x.quantity}</td><td>${esc(x.customer)}</td><td>$${(+x.total_amount||0).toFixed(2)}</td><td>$${(+x.profit||0).toFixed(2)}</td></tr>`).join('')+'</table>'}
+async function renderCorrection(){let r=await db.from('stock_corrections').select('*').order('created_at',{ascending:false});if(r.error)return corHistory.innerHTML='<div class="empty">Correction history table is not available yet.</div>';corHistory.innerHTML='<table><tr><th>Date</th><th>Model</th><th>Size</th><th>New Qty</th><th>Reason</th></tr>'+r.data.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(models.find(m=>m.id===x.model_id)?.model_code||x.model_id)}</td><td>${x.size}</td><td>${x.quantity}</td><td>${esc(x.reason)}</td></tr>`).join('')+'</table>'}
+correctionForm.onsubmit=async e=>{e.preventDefault();let model_id=corModel.value,rows=[...document.querySelectorAll('#corSizes .qty')],reason=corReason.value,date=corDate.value;for(let x of rows){let n=+x.value,old=stock.find(y=>y.model_id===model_id&&+y.size===+x.dataset.size);if(old){let r=await db.from('current_stock').update({quantity:n}).eq('id',old.id);if(r.error)return alert(r.error.message)}else if(n>0){let r=await db.from('current_stock').insert({model_id,size:+x.dataset.size,quantity:n});if(r.error)return alert(r.error.message)}let h=await db.from('stock_corrections').insert({model_id,size:+x.dataset.size,quantity:n,date,reason});if(h.error)console.warn(h.error)}msg('Correction saved');await load();sizeInputs('corModel')}
+function renderReports(){let purchase=stock.reduce((a,x)=>a+(+x.quantity||0),0),rev=sales.reduce((a,x)=>a+(+x.total_amount||0),0),profit=sales.reduce((a,x)=>a+(+x.profit||0),0);rPurchase.textContent='$'+purchase.toFixed(2);rRevenue.textContent='$'+rev.toFixed(2);rProfit.textContent='$'+profit.toFixed(2);months.innerHTML='<table><tr><th>Month</th><th>Revenue</th></tr>'+Object.entries(sales.reduce((a,x)=>{let k=(x.date||'').slice(0,7);a[k]=(a[k]||0)+(+x.total_amount||0);return a},{})).map(([k,v])=>`<tr><td>${k}</td><td>$${v.toFixed(2)}</td></tr>`).join('')+'</table>'}
+function download(name,text,type){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click()}
+function exportJSON(){download('kids-shoe-backup.json',JSON.stringify({models,sizes,stock,sales,corrections},null,2),'application/json')}
+function exportCSV(){let rows=['model_code,model_name,size,quantity'];stock.forEach(x=>{let m=models.find(z=>z.id===x.model_id)||{};rows.push([m.model_code,m.model_name,x.size,x.quantity].map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(','))});download('inventory.csv',rows.join('\n'),'text/csv')}
+async function importJSON(){let f=importFile.files[0];if(!f)return alert('Choose a JSON backup first');let data=JSON.parse(await f.text());if(!Array.isArray(data.models))return alert('Invalid backup');for(let m of data.models){let r=await db.from('shoe_models').upsert(m,{onConflict:'id'});if(r.error)console.warn(r.error)}importMsg.textContent='Models imported. Refreshing...';await load()}
+grid('createSizes');grid('editSizes');load();
 </script>
-</body>
-</html>
+</body></html>
