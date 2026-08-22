@@ -226,14 +226,22 @@ function renderStockCards(){
     });
   });
 
-  box.querySelectorAll('.stock-card-qty').forEach(input=>{
-    input.addEventListener('input',()=>{
-      const card=input.closest('.stock-model-card');
-      const total=[...card.querySelectorAll('.stock-card-qty')]
-        .reduce((sum,x)=>sum+Math.max(0,parseInt(x.value,10)||0),0);
-      card.querySelector('.stock-entered-total').textContent=total;
-    });
-  });
+  // Update the total whenever a quantity changes. Use delegation so it also works
+  // reliably after the Stock In cards are re-rendered.
+  box.addEventListener('input', updateStockCardTotal);
+  box.addEventListener('change', updateStockCardTotal);
+  box.querySelectorAll('.stock-model-card').forEach(updateStockCardTotal);
+
+  function updateStockCardTotal(eventOrCard){
+    const card = eventOrCard instanceof Element
+      ? eventOrCard
+      : eventOrCard.target?.closest?.('.stock-model-card');
+    if(!card) return;
+    const total=[...card.querySelectorAll('input[type=number][data-size]')]
+      .reduce((sum,x)=>sum+Math.max(0,Number(x.value)||0),0);
+    const totalEl=card.querySelector('.stock-entered-total');
+    if(totalEl) totalEl.textContent=total;
+  }
 }
 function sizeInputs(id){let map={saleModel:'saleSizes',corModel:'corSizes'},box=document.getElementById(map[id]),m=models.find(x=>x.id===document.getElementById(id).value);if(!m){box.innerHTML='';return}let z=ms(m.id);box.innerHTML=z.map(n=>{let q=currentQty(m.id,n);return `<label class="size-box" style="display:block"><b>Size ${n}</b><small>Current: ${q}</small><input class="qty" data-size="${n}" type="number" min="0" value="0" style="width:100%"></label>`}).join('')}
 async function compress(file){return new Promise((res,rej)=>{let r=new FileReader;r.onload=()=>{let i=new Image;i.onload=()=>{let max=900,w=i.width,h=i.height;if(w>max||h>max){if(w>h){h=h*max/w;w=max}else{w=w*max/h;h=max}}let c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(i,0,0,w,h);res(c.toDataURL('image/jpeg',.78))};i.onerror=rej;i.src=r.result};r.onerror=rej;r.readAsDataURL(file)})}
@@ -463,11 +471,14 @@ async function saveModelStock(model_id){
     }
 
     // Read only the quantity inputs inside this model's card.
-    const rows=[...card.querySelectorAll('input.stock-card-qty')]
+    // Read the actual value from every size input in THIS model card.
+    // Do not rely on the displayed total or on an input event having fired.
+    const inputs=[...card.querySelectorAll('input[type=number][data-size]')];
+    const rows=inputs
       .map(input=>({
         input,
         size:Number(input.dataset.size),
-        quantity:parseInt(String(input.value).trim(),10)||0
+        quantity:Math.max(0,Number(String(input.value).trim())||0)
       }))
       .filter(x=>x.quantity>0);
 
@@ -475,6 +486,10 @@ async function saveModelStock(model_id){
       alert('Please enter a quantity greater than 0 for at least one size.\nExample: Size 21 = 5.');
       return;
     }
+
+    // Refresh the total immediately before saving.
+    const totalEl=card.querySelector('.stock-entered-total');
+    if(totalEl) totalEl.textContent=rows.reduce((sum,x)=>sum+x.quantity,0);
 
     const modelSizes=sizes.filter(x=>String(x.model_id)===String(model_id));
 
