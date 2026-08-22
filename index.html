@@ -27,7 +27,7 @@ table{width:100%;border-collapse:collapse;margin-top:14px}th,td{padding:9px;bord
 .table-wrap{overflow:auto}.size-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(65px,1fr));gap:8px;margin-top:8px}
 .size-box{display:flex;align-items:center;justify-content:center;gap:4px;border:1px solid #cbd5e1;border-radius:8px;padding:8px;background:#fff;cursor:pointer}
 .size-box input{width:auto;margin:0}.size-box:has(input:checked){background:#eaf7f0;border-color:#22c55e}
-.actions{display:flex;gap:5px;flex-wrap:wrap}.model-image{width:62px;height:62px;object-fit:cover;border-radius:9px;border:1px solid #ddd}.image-cell{width:70px;height:62px;display:flex;align-items:center}.image-fallback{width:62px;height:62px;border:1px solid #ddd;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:25px;background:#f8fafc}
+.actions{display:flex;gap:5px;flex-wrap:wrap}.model-image{width:62px;height:62px;object-fit:cover;border-radius:9px;border:1px solid #ddd}.image-cell{width:70px;height:62px;display:flex;align-items:center}.image-fallback{width:62px;height:62px;border:1px solid #ddd;border-radius:9px;display:none;align-items:center;justify-content:center;font-size:25px;background:#f8fafc}
  .preview{width:180px;height:180px;object-fit:cover;border-radius:9px;border:1px solid #ddd;margin-top:8px;display:block}
 .empty{text-align:center;color:#64748b;padding:28px}.history-table{width:100%;border-collapse:separate;border-spacing:0;margin-top:10px}.history-table th,.history-table td{padding:9px;border-bottom:1px solid #e5e7eb;font-size:14px}.history-table th{background:#f8fafc}.history-group{border:1px solid #e2e8f0;border-radius:12px;margin:12px 0;overflow:hidden;background:#fff}.history-head{padding:13px 15px;background:#f8fafc;display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}.history-title{font-weight:800;font-size:16px}.history-meta{color:#64748b;font-size:13px;margin-top:4px}.size-chips{display:flex;gap:7px;flex-wrap:wrap;padding:12px 15px}.size-chip{border:1px solid #cbd5e1;border-radius:8px;padding:7px 10px;background:#fff;font-weight:700}.size-chip b{color:#172033}.history-total{font-weight:800;padding:12px 15px;border-top:1px solid #e5e7eb;text-align:right}.stock-toolbar{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:18px}.stock-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px}.stock-model-card{border:1px solid #e2e8f0;border-radius:14px;background:#fff;overflow:hidden}.stock-model-head{display:flex;gap:12px;align-items:center;padding:14px;background:#f8fafc;border-bottom:1px solid #e2e8f0}.stock-model-img,.stock-model-fallback{width:72px;height:72px;flex:0 0 72px;border-radius:10px;border:1px solid #ddd;object-fit:cover}.stock-model-fallback{display:flex;align-items:center;justify-content:center;font-size:30px;background:#f1f5f9}.stock-model-title{font-weight:800;font-size:17px}.stock-model-sub{color:#64748b;font-size:13px;margin-top:3px}.stock-size-list{padding:12px 14px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.stock-size-row{display:grid;grid-template-columns:1fr 88px;align-items:center;gap:8px;border:1px solid #e2e8f0;border-radius:9px;padding:7px 9px;background:#fff}.stock-size-label{font-weight:700}.stock-current{display:block;color:#64748b;font-size:11px;font-weight:400}.stock-size-row input{margin:0;padding:8px}.stock-model-actions{padding:12px 14px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;gap:8px}.stock-total{font-weight:800}.stock-save{width:auto}.stock-empty{grid-column:1/-1}.status{font-weight:700;font-size:13px}.ok{color:#86efac}.bad{color:#fecaca}
 .modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:15px;z-index:50}
@@ -60,7 +60,7 @@ table{width:100%;border-collapse:collapse;margin-top:14px}th,td{padding:9px;bord
 
 <section id="models" class="page">
 <div class="panel"><h2>👟 Create Shoe Model</h2>
-<div class="notice">Old-version functions kept: image, flexible sizes, edit, copy, delete and size management. Stock history is grouped by transaction so you can check one purchase/sale at a time.</div>
+<div class="notice">Cloud version: create each model independently, upload its own image, choose its own sizes, and manage stock by model. A manual “Delete test 001” button appears only while model 001 exists.</div>
 <form id="modelForm">
 <label>Model Code<input id="code" required placeholder="M001"></label>
 <label>Model Name<input id="name" required placeholder="Sport Kids"></label>
@@ -70,9 +70,14 @@ table{width:100%;border-collapse:collapse;margin-top:14px}th,td{padding:9px;bord
 <label>Minimum Stock / Size<input id="min" type="number" min="0" value="2"></label>
 <label>Image<input id="image" type="file" accept="image/*"><span id="imageBox"></span></label>
 <div style="grid-column:1/-1"><label>Select Initial Sizes</label><div id="createSizes" class="size-grid"></div></div>
-<div><button class="primary" type="submit">+ Create Model</button> <button class="secondary" type="button" onclick="resetModel()">Clear</button></div>
+<div><button id="createModelBtn" class="primary" type="button" onclick="createModel()">+ Create Model</button> <button class="secondary" type="button" onclick="resetModel()">Clear</button></div>
 </form></div>
-<div class="panel"><div style="display:flex;gap:10px;align-items:center"><h2 style="margin-right:auto">Model List</h2><input id="search" placeholder="Search model/code/color" oninput="renderModels()"></div>
+<div class="panel">
+<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+<h2 style="margin-right:auto">Model List</h2>
+<input id="search" placeholder="Search model/code/color" oninput="renderModels()">
+<button id="deleteTest001Btn" class="danger" type="button" onclick="deleteTest001()" style="display:none">🗑️ Delete test 001</button>
+</div>
 <div class="table-wrap"><table><thead><tr><th>Image</th><th>Code</th><th>Model</th><th>Color</th><th>Cost</th><th>Sell</th><th>Min</th><th>Sizes</th><th>Action</th></tr></thead><tbody id="modelsTable"></tbody></table></div></div>
 </section>
 
@@ -150,7 +155,7 @@ function fillSelects(){
   renderStockCards();
 }
 function currentQty(modelId,size){return Number(stock.find(x=>x.model_id===modelId&&Number(x.size)===Number(size))?.current_stock||0)}
-function imageHtml(url,cls='stock-model-img'){
+function stockImageHtml(url,cls='stock-model-img'){
   if(!url)return '<div class="stock-model-fallback">👟</div>';
   return `<img class="${cls}" src="${esc(url)}" alt="Shoe image" onerror="this.outerHTML='<div class=\"stock-model-fallback\">👟</div>'">`;
 }
@@ -164,7 +169,7 @@ function renderStockCards(){
     const z=sizes.filter(x=>x.model_id===m.id).map(x=>Number(x.size)).sort((a,b)=>a-b);
     return `<div class="stock-model-card" data-model-id="${m.id}">
       <div class="stock-model-head">
-        ${imageHtml(m.image_url)}
+        ${stockImageHtml(m.image_url)}
         <div><div class="stock-model-title">${esc(m.model_code)} — ${esc(m.model_name)}</div><div class="stock-model-sub">${esc(m.color||'')} • Current stock shown below</div></div>
       </div>
       <div class="stock-size-list">${z.map(n=>`<label class="stock-size-row"><span class="stock-size-label">Size ${n}<small class="stock-current">Current: ${currentQty(m.id,n)}</small></span><input class="stock-card-qty" data-size="${n}" type="number" min="0" step="1" value="0"></label>`).join('')||'<div class="empty">No sizes configured.</div>'}</div>
@@ -191,25 +196,122 @@ async function saveImage(file,modelId){
   return data;
 }
 image.onchange=async e=>{let f=e.target.files[0];if(f)imageBox.innerHTML=`<img class="preview" src="${await compress(f)}">`};
-modelForm.onsubmit=async e=>{
-  e.preventDefault();
-  if(!code.value.trim()||!name.value.trim())return alert('Code and name are required');
-  const m={model_code:code.value.trim(),model_name:name.value.trim(),color:color.value.trim(),cost_price:+cost.value||0,selling_price:+price.value||0,minimum_stock:+min.value||0,image_url:null};
-  let r=await db.from('shoe_models').insert(m).select().single();
-  if(r.error)return alert(r.error.message);
-  const f=image.files[0];
-  if(f){
-    const imageUrl=await saveImage(f,r.data.id);
-    const ur=await db.from('shoe_models').update({image_url:imageUrl}).eq('id',r.data.id);
-    if(ur.error)console.warn('Image URL could not be saved:',ur.error);
+async function createModel(){
+  const btn=document.getElementById('createModelBtn');
+  if(!btn || btn.disabled)return;
+
+  const modelCode=document.getElementById('code').value.trim();
+  const modelName=document.getElementById('name').value.trim();
+  const modelColor=document.getElementById('color').value.trim();
+  const modelCost=Number(document.getElementById('cost').value)||0;
+  const modelPrice=Number(document.getElementById('price').value)||0;
+  const modelMin=Number(document.getElementById('min').value)||0;
+  const file=document.getElementById('image').files[0]||null;
+  const selectedSizes=checked('createSizes');
+
+  if(!modelCode){ alert('Please enter a Model Code.'); return; }
+  if(!modelName){ alert('Please enter a Model Name.'); return; }
+  if(!selectedSizes.length){ alert('Please select at least one size.'); return; }
+
+  btn.disabled=true;
+  btn.textContent='Saving...';
+
+  try{
+    // Check the code without requiring the result to be a single row.
+    const exists=await db.from('shoe_models')
+      .select('id')
+      .eq('model_code',modelCode)
+      .limit(1);
+
+    if(exists.error)throw exists.error;
+
+    if(exists.data && exists.data.length){
+      throw new Error(
+        'Model code "'+modelCode+'" already exists. Please use a different code.'
+      );
+    }
+
+    // STEP 1: Save the model.
+    const created=await db.from('shoe_models').insert({
+      model_code:modelCode,
+      model_name:modelName,
+      color:modelColor,
+      cost_price:modelCost,
+      selling_price:modelPrice,
+      minimum_stock:modelMin,
+      image_url:null
+    }).select().single();
+
+    if(created.error)throw created.error;
+
+    const modelId=created.data.id;
+
+    // STEP 2: Save the selected sizes.
+    // IMPORTANT: Do NOT delete the model if this fails.
+    // The model must remain visible so the user can fix sizes separately.
+    const sizeRows=selectedSizes.map(size=>({
+      model_id:modelId,
+      size:Number(size)
+    }));
+
+    const sizeResult=await db.from('shoe_sizes').insert(sizeRows);
+
+    if(sizeResult.error){
+      console.error('Size save error:',sizeResult.error);
+
+      resetModel();
+      await load();
+
+      alert(
+        'The model "'+modelCode+'" was created successfully, '+
+        'but the sizes could not be saved.\n\n'+
+        'Supabase says:\n'+sizeResult.error.message+
+        '\n\nThe model is NOT deleted. It is now in your Model List.'
+      );
+      return;
+    }
+
+    // STEP 3: Save the image after the model exists.
+    if(file){
+      try{
+        const imageUrl=await saveImage(file,modelId);
+
+        if(imageUrl){
+          const imageResult=await db.from('shoe_models')
+            .update({image_url:imageUrl})
+            .eq('id',modelId);
+
+          if(imageResult.error){
+            console.warn('Image URL could not be saved:',imageResult.error);
+            alert(
+              'Model and sizes were saved, but the image could not be saved.\n\n'+
+              imageResult.error.message
+            );
+          }
+        }
+      }catch(imageErr){
+        console.error('Image save error:',imageErr);
+        alert(
+          'Model and sizes were saved, but the image could not be saved.\n\n'+
+          (imageErr.message||imageErr)
+        );
+      }
+    }
+
+    resetModel();
+    await load();
+    msg('✅ Model '+modelCode+' created successfully');
+
+  }catch(err){
+    console.error('Create model error:',err);
+    alert('Could not create model:\n\n'+(err.message||err));
+  }finally{
+    btn.disabled=false;
+    btn.textContent='+ Create Model';
   }
-  const z=checked('createSizes');
-  if(z.length){
-    let q=await db.from('shoe_sizes').insert(z.map(size=>({model_id:r.data.id,size})));
-    if(q.error)return alert(q.error.message);
-  }
-  resetModel();msg('Model created');await load();
 }
+
+
 function resetModel(){modelForm.reset();min.value=2;grid('createSizes');imageBox.innerHTML=''}
 async function replaceSizes(id,z){await db.from('shoe_sizes').delete().eq('model_id',id);if(z.length)await db.from('shoe_sizes').insert(z.map(size=>({model_id:id,size})))}
 function imageSrc(v){
@@ -220,9 +322,48 @@ function imageSrc(v){
 }
 function imageHtml(v){
   const src=imageSrc(v);
-  return src?`<img class="model-image" src="${esc(src)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="image-fallback">👟</span>`:`<span class="image-fallback">👟</span>`;
+  if(!src)return '<span class="image-fallback" style="display:flex">👟</span>';
+  return `<img class="model-image" src="${esc(src)}" alt="Shoe image" onload="this.nextElementSibling.style.display='none'" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="image-fallback">👟</span>`;
 }
+
+async function deleteTest001(){
+  const m = models.find(x => String(x.model_code).trim() === '001');
+  if(!m){
+    alert('Model 001 was not found.');
+    return;
+  }
+
+  const ok = confirm(
+    'Delete test model 001?\n\n' +
+    'This will remove the model and its configured shoe sizes.\n' +
+    'It will NOT automatically delete stock/sales history.'
+  );
+  if(!ok) return;
+
+  try{
+    // Remove the model's size definitions first.
+    const sz = await db.from('shoe_sizes').delete().eq('model_id',m.id);
+    if(sz.error) throw sz.error;
+
+    const md = await db.from('shoe_models').delete().eq('id',m.id);
+    if(md.error) throw md.error;
+
+    msg('✅ Test model 001 deleted');
+    await load();
+  }catch(err){
+    console.error(err);
+    alert(
+      'Could not delete model 001.\n\n' +
+      'Supabase says:\n' + (err.message || err) +
+      '\n\nIf this model has stock/sales history, do not force-delete it. ' +
+      'Send me this error and I will make the safe history cleanup.'
+    );
+  }
+}
+
 function renderModels(){
+  const testBtn=document.getElementById('deleteTest001Btn');
+  if(testBtn) testBtn.style.display=models.some(x=>String(x.model_code).trim()==='001')?'inline-block':'none';
   let q=(search.value||'').toLowerCase();
   modelsTable.innerHTML=models.filter(m=>[m.model_code,m.model_name,m.color].join(' ').toLowerCase().includes(q)).map(m=>`<tr><td><div class="image-cell">${imageHtml(m.image_url)}</div></td><td>${esc(m.model_code)}</td><td>${esc(m.model_name)}</td><td>${esc(m.color)}</td><td>$${(+m.cost_price||0).toFixed(2)}</td><td>$${(+m.selling_price||0).toFixed(2)}</td><td>${m.minimum_stock}</td><td>${ms(m.id).join(', ')}</td><td><div class="actions"><button class="secondary" onclick="editModel('${m.id}')">Edit</button><button class="secondary" onclick="copyModel('${m.id}')">Copy</button><button class="secondary" onclick="manageSizes('${m.id}')">Sizes</button><button class="danger" onclick="delModel('${m.id}')">Delete</button></div></td></tr>`).join('')||'<tr><td colspan="9" class="empty">No models yet.</td></tr>';
 }
