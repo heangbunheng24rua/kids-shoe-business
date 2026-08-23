@@ -716,16 +716,51 @@ function resetModel(){modelForm.reset();min.value=2;createSizeGrid();imageBox.in
 async function replaceSizes(id,z){
   const wanted=[...new Set(z.map(Number))].sort((a,b)=>a-b);
   const existing=sizes.filter(x=>String(x.model_id)===String(id));
-  const existingNums=existing.map(x=>Number(x.size));
+  const wantedSet=new Set(wanted);
 
-  // Never delete an existing shoe_size: stock_in_items references it.
-  const toAdd=wanted.filter(n=>!existingNums.includes(n));
-
+  // Add sizes that are newly selected.
+  const toAdd=existing.length===0
+    ? wanted
+    : wanted.filter(n=>!existing.some(x=>Number(x.size)===n));
   if(toAdd.length){
     const r=await db.from('shoe_sizes').insert(
       toAdd.map(size=>({model_id:id,size}))
     );
     if(r.error)throw r.error;
+  }
+
+  // Remove sizes that were explicitly unchecked, but only when they are not
+  // referenced by any transaction/history. This prevents foreign-key errors.
+  const toRemove=existing.filter(x=>!wantedSet.has(Number(x.size)));
+  const blocked=[];
+  for(const sz of toRemove){
+    const checks=await Promise.all([
+      db.from('stock_in_items').select('id',{count:'exact',head:true}).eq('shoe_size_id',sz.id),
+      db.from('sale_items').select('id',{count:'exact',head:true}).eq('shoe_size_id',sz.id),
+      db.from('stock_correction_items').select('id',{count:'exact',head:true}).eq('shoe_size_id',sz.id)
+    ]);
+    const bad=checks.find(x=>x.error);
+    if(bad)throw bad.error;
+    const used=checks.some(x=>(x.count||0)>0);
+    if(used){
+      blocked.push(Number(sz.size));
+      continue;
+    }
+    const r=await db.from('shoe_sizes').delete().eq('id',sz.id);
+    if(r.error)throw r.error;
+  }
+
+  // Keep the in-memory list accurate immediately.
+  sizes=sizes.filter(x=>String(x.model_id)!==String(id) || wantedSet.has(Number(x.size)) || blocked.includes(Number(x.size)));
+  const fresh=await db.from('shoe_sizes').select('id,model_id,size').eq('model_id',id).order('size');
+  if(fresh.error)throw fresh.error;
+  sizes=sizes.filter(x=>String(x.model_id)!==String(id)).concat(fresh.data||[]);
+
+  if(blocked.length){
+    throw new Error(
+      'These sizes could not be removed because they already have stock/sale/correction history: '+
+      blocked.sort((a,b)=>a-b).join(', ')+'. Their history must be deleted first if you want to remove them completely.'
+    );
   }
 }
 function imageSrc(v){
@@ -763,9 +798,11 @@ editForm.onsubmit=async e=>{
   try{
     await replaceSizes(id,checked('editSizes'));
   }catch(err){
-    return alert('Model details were saved, but sizes could not be changed:\n\n'+err.message);
+    // The model fields are already saved. If a size has history, explain exactly why.
+    await load();
+    return alert('Model details were saved, but some size changes were blocked.\n\n'+err.message);
   }
-  closeEdit();msg('Model updated');await load();
+  closeEdit();msg('Model updated — sizes updated');await load();
 }
 function closeEdit(){editModal.classList.remove('show')}
 async function copyModel(id){
