@@ -40,6 +40,8 @@ table{width:100%;border-collapse:collapse;margin-top:14px}th,td{padding:9px;bord
 .modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:15px;z-index:50}
 .modal.show{display:flex}.modal-card{background:#fff;border-radius:14px;padding:20px;width:min(900px,100%);max-height:92vh;overflow:auto}
 @media(max-width:700px){header{align-items:flex-start;flex-direction:column}main{padding:12px}table{min-width:900px}}
+
+.cor-model-results{display:flex;flex-direction:column;gap:7px;margin-top:7px}.cor-model-result{display:flex;align-items:center;gap:10px;border:1px solid #cbd5e1;border-radius:10px;padding:8px 10px;background:#fff;cursor:pointer}.cor-model-result:hover{background:#f8fafc;border-color:#94a3b8}.cor-model-result img,.cor-model-result-fallback{width:48px;height:48px;flex:0 0 48px;border-radius:8px;border:1px solid #ddd;object-fit:cover}.cor-model-result-fallback{display:flex;align-items:center;justify-content:center;background:#f8fafc;font-size:22px}.cor-model-preview{margin-top:10px;border:1px solid #e2e8f0;border-radius:13px;background:#f8fafc;padding:14px}.cor-preview-head{display:flex;gap:14px;align-items:center}.cor-preview-image,.cor-preview-fallback{width:110px;height:110px;flex:0 0 110px;border-radius:12px;border:1px solid #ddd;object-fit:cover;background:#fff}.cor-preview-fallback{display:flex;align-items:center;justify-content:center;font-size:42px}.cor-preview-title{font-size:18px;font-weight:800}.cor-preview-sub{color:#64748b;font-size:13px;margin-top:4px}.cor-preview-total{margin-top:5px;font-weight:800}.cor-stock-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(115px,1fr));gap:8px;margin-top:13px}.cor-stock-chip{border:1px solid #cbd5e1;border-radius:9px;background:#fff;padding:8px;text-align:center}.cor-stock-chip b{display:block;font-size:15px}.cor-stock-chip span{display:block;color:#64748b;font-size:12px;margin-top:2px}.cor-selected{border-color:#22c55e;background:#f0fdf4}.cor-no-results{color:#64748b;font-size:13px;padding:8px 2px}
 .stock-image-wrap{position:relative;width:72px;height:72px;flex:0 0 72px}.stock-image-wrap img{width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid #ddd;display:block}.stock-image-wrap .stock-model-fallback{position:absolute;inset:0;align-items:center;justify-content:center;border:1px solid #ddd;border-radius:10px;background:#f8fafc;font-size:28px}</style>
 </head>
 <body>
@@ -116,9 +118,21 @@ table{width:100%;border-collapse:collapse;margin-top:14px}th,td{padding:9px;bord
 </section>
 
 <section id="correction" class="page">
-<div class="panel"><h2>🔄 Stock Correction</h2><div class="notice">Use this when physical stock differs from system stock.</div>
-<form id="correctionForm"><label>Model<select id="corModel" required></select></label><label>Date<input id="corDate" type="date" required></label><label>Reason<input id="corReason" placeholder="Counting error / damaged / found"></label>
-<div style="grid-column:1/-1"><div id="corSizes" class="size-grid"></div></div><button class="primary">Save Correction</button></form></div>
+<div class="panel"><h2>🔄 Stock Correction</h2><div class="notice">Search a shoe model first. The model image and current stock by size will appear before you make a correction.</div>
+<form id="correctionForm">
+<div style="grid-column:1/-1">
+<label>Search Model
+<input id="corModelSearch" type="search" placeholder="Type model code, name or color..." autocomplete="off" oninput="searchCorrectionModel()">
+</label>
+<div id="corModelResults" class="cor-model-results"></div>
+<select id="corModel" required style="display:none"></select>
+<div id="corModelPreview" class="cor-model-preview empty">Search and select a model to see its image and current stock.</div>
+</div>
+<label>Date<input id="corDate" type="date" required></label>
+<label>Reason<input id="corReason" placeholder="Counting error / damaged / found"></label>
+<div style="grid-column:1/-1"><div id="corSizes" class="size-grid"></div></div>
+<button class="primary">Save Correction</button>
+</form></div>
 <div class="panel"><h2>Correction History</h2><div id="corHistory"></div></div>
 </section>
 
@@ -309,6 +323,10 @@ function fillSelects(){
   });
   sizeInputs('saleModel');
   sizeInputs('corModel');
+  const corSearch=document.getElementById('corModelSearch');
+  if(corSearch)corSearch.value='';
+  const corResults=document.getElementById('corModelResults');
+  if(corResults)corResults.innerHTML='';
   renderStockCards();
 }
 function currentQty(modelId,size){return Number(stock.find(x=>x.model_id===modelId&&Number(x.size)===Number(size))?.current_stock||0)}
@@ -399,7 +417,48 @@ function renderStockCards(){
     if(totalEl) totalEl.textContent=total;
   }
 }
-function sizeInputs(id){let map={saleModel:'saleSizes',corModel:'corSizes'},box=document.getElementById(map[id]),m=models.find(x=>x.id===document.getElementById(id).value);if(!m){box.innerHTML='';return}let z=ms(m.id);box.innerHTML=z.map(n=>{let q=currentQty(m.id,n);return `<label class="size-box" style="display:block"><b>Size ${n}</b><small>Current: ${q}</small><input class="qty" data-size="${n}" type="number" min="0" value="0" style="width:100%"></label>`}).join('')}
+function sizeInputs(id){
+  let map={saleModel:'saleSizes',corModel:'corSizes'},box=document.getElementById(map[id]),m=models.find(x=>String(x.id)===String(document.getElementById(id).value));
+  if(!m){box.innerHTML='';if(id==='corModel')renderCorrectionPreview(null);return}
+  let z=ms(m.id);
+  box.innerHTML=z.map(n=>{let q=currentQty(m.id,n);return `<label class="size-box" style="display:block"><b>Size ${n}</b><small>Current: ${q}</small><input class="qty" data-size="${n}" type="number" min="0" value="${q}" style="width:100%"></label>`}).join('');
+  if(id==='corModel')renderCorrectionPreview(m);
+}
+function correctionImage(url,large=false){
+  const src=imageSrc(url);
+  const cls=large?'cor-preview-image':'cor-model-result';
+  if(!src)return `<div class="${large?'cor-preview-fallback':'cor-model-result-fallback'}">👟</div>`;
+  return `<img class="${large?'cor-preview-image':'cor-model-result'}" src="${esc(src)}" alt="${esc(url?'Shoe image':'Shoe')}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'><div class="${large?'cor-preview-fallback':'cor-model-result-fallback'}" style="display:none">👟</div>`;
+}
+function correctionModelText(m){return `${m.model_code||''} — ${m.model_name||''}${m.color?' — '+m.color:''}`.trim()}
+function searchCorrectionModel(){
+  const input=document.getElementById('corModelSearch');
+  const results=document.getElementById('corModelResults');
+  const q=(input?.value||'').trim().toLowerCase();
+  if(!q){results.innerHTML='';return;}
+  const list=models.filter(m=>[m.model_code,m.model_name,m.color].join(' ').toLowerCase().includes(q)).slice(0,8);
+  if(!list.length){results.innerHTML='<div class="cor-no-results">No matching shoe model found.</div>';return;}
+  results.innerHTML=list.map(m=>`<div class="cor-model-result" data-id="${esc(m.id)}"><div style="width:48px;height:48px;flex:0 0 48px">${correctionImage(m.image_url,false)}</div><div><b>${esc(m.model_code)} — ${esc(m.model_name)}</b><div class="muted">${esc(m.color||'')}</div></div></div>`).join('');
+  results.querySelectorAll('.cor-model-result').forEach(el=>el.onclick=()=>selectCorrectionModel(el.dataset.id));
+}
+function selectCorrectionModel(id){
+  const m=models.find(x=>String(x.id)===String(id));
+  if(!m)return;
+  document.getElementById('corModel').value=m.id;
+  document.getElementById('corModelSearch').value=correctionModelText(m);
+  document.getElementById('corModelResults').innerHTML='';
+  sizeInputs('corModel');
+}
+function renderCorrectionPreview(m){
+  const box=document.getElementById('corModelPreview');
+  if(!box)return;
+  if(!m){box.className='cor-model-preview empty';box.innerHTML='Search and select a model to see its image and current stock.';return;}
+  const modelSizes=sizes.filter(x=>String(x.model_id)===String(m.id)).map(x=>Number(x.size)).sort((a,b)=>a-b);
+  const total=modelSizes.reduce((sum,n)=>sum+currentQty(m.id,n),0);
+  box.className='cor-model-preview';
+  box.innerHTML=`<div class="cor-preview-head">${correctionImage(m.image_url,true)}<div><div class="cor-preview-title">${esc(m.model_code)} — ${esc(m.model_name)}</div><div class="cor-preview-sub">Color: ${esc(m.color||'-')}</div><div class="cor-preview-total">Current total stock: ${total} pairs</div></div></div><div class="cor-stock-grid">${modelSizes.map(n=>`<div class="cor-stock-chip"><b>Size ${n}</b><span>Current: ${currentQty(m.id,n)} pairs</span></div>`).join('')||'<div class="cor-no-results">No sizes configured for this model.</div>'}</div>`;
+}
+
 async function compress(file){return new Promise((res,rej)=>{let r=new FileReader;r.onload=()=>{let i=new Image;i.onload=()=>{let max=900,w=i.width,h=i.height;if(w>max||h>max){if(w>h){h=h*max/w;w=max}else{w=w*max/h;h=max}}let c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(i,0,0,w,h);res(c.toDataURL('image/jpeg',.78))};i.onerror=rej;i.src=r.result};r.onerror=rej;r.readAsDataURL(file)})}
 async function saveImage(file,modelId){
   if(!file)return null;
