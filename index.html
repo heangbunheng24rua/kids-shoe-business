@@ -41,7 +41,13 @@ table{width:100%;border-collapse:collapse;margin-top:14px}th,td{padding:9px;bord
 .modal.show{display:flex}.modal-card{background:#fff;border-radius:14px;padding:20px;width:min(900px,100%);max-height:92vh;overflow:auto}
 @media(max-width:700px){header{align-items:flex-start;flex-direction:column}main{padding:12px}table{min-width:900px}}
 
-.cor-model-results{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:10px}.cor-model-result{display:flex;flex-direction:column;align-items:center;gap:7px;border:1px solid #cbd5e1;border-radius:13px;padding:10px;background:#fff;cursor:pointer;text-align:center;transition:.15s}.cor-model-result:hover{background:#f8fafc;border-color:#2563eb;box-shadow:0 3px 12px #00000012;transform:translateY(-1px)}.cor-model-result.cor-selected{border-color:#22c55e;background:#f0fdf4}.cor-model-result img,.cor-model-result-fallback{width:112px;height:112px;flex:0 0 112px;border-radius:10px;border:1px solid #ddd;object-fit:cover;background:#fff}.cor-model-result-fallback{display:flex;align-items:center;justify-content:center;background:#f8fafc;font-size:40px}.cor-result-code{font-weight:800;font-size:15px;line-height:1.2}.cor-result-meta{color:#64748b;font-size:12px;margin-top:1px}.cor-result-stock{font-weight:800;font-size:12px;margin-top:2px;color:#166534}.cor-click-hint{font-size:11px;color:#64748b;margin-top:2px}.cor-model-preview{margin-top:10px;border:1px solid #e2e8f0;border-radius:13px;background:#f8fafc;padding:14px}.cor-preview-head{display:flex;gap:14px;align-items:center}.cor-preview-image,.cor-preview-fallback{width:130px;height:130px;flex:0 0 130px;border-radius:12px;border:1px solid #ddd;object-fit:cover;background:#fff}.cor-preview-fallback{display:flex;align-items:center;justify-content:center;font-size:42px}.cor-preview-title{font-size:18px;font-weight:800}.cor-preview-sub{color:#64748b;font-size:13px;margin-top:4px}.cor-preview-total{margin-top:5px;font-weight:800}.cor-stock-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(115px,1fr));gap:8px;margin-top:13px}.cor-stock-chip{border:1px solid #cbd5e1;border-radius:9px;background:#fff;padding:8px;text-align:center}.cor-stock-chip b{display:block;font-size:15px}.cor-stock-chip span{display:block;color:#64748b;font-size:12px;margin-top:2px}.cor-selected{border-color:#22c55e;background:#f0fdf4}.cor-no-results{color:#64748b;font-size:13px;padding:8px 2px}.reset-danger{margin-top:8px;border:0;background:#b91c1c;color:#fff;padding:10px 14px;border-radius:8px;font-weight:800;cursor:pointer}.reset-danger:hover{background:#991b1b}
+.cor-model-results{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:10px}.cor-model-result{display:flex;flex-direction:column;align-items:center;gap:7px;border:1px solid #cbd5e1;border-radius:13px;padding:10px;background:#fff;cursor:pointer;text-align:center;transition:.15s}.cor-model-result:hover{background:#f8fafc;border-color:#2563eb;box-shadow:0 3px 12px #00000012;transform:translateY(-1px)}.cor-model-result.cor-selected{border-color:#22c55e;background:#f0fdf4}.cor-model-result img,.cor-model-result-fallback{width:112px;height:112px;flex:0 0 112px;border-radius:10px;border:1px solid #ddd;object-fit:cover;background:#fff}.cor-model-result-fallback{display:flex;align-items:center;justify-content:center;background:#f8fafc;font-size:40px}.cor-result-code{font-weight:800;font-size:15px;line-height:1.2}.cor-result-meta{color:#64748b;font-size:12px;margin-top:1px}.cor-result-stock{font-weight:800;font-size:12px;margin-top:2px;color:#166534}.cor-click-hint{font-size:11px;color:#64748b;margin-top:2px}.cor-model-preview{margin-top:10px;border:1px solid #e2e8f0;border-radius:13px;background:#f8fafc;padding:14px}.cor-preview-head{display:flex;gap:14px;align-items:center}.cor-preview-image,.cor-preview-fallback{width:130px;height:130px;flex:0 0 130px;border-radius:12px;border:1px solid #ddd;object-fit:cover;background:#fff}.cor-preview-fallback{display:flex;align-items:center;justify-content:center;font-size:42px}.cor-preview-title{font-size:18px;font-weight:800}.cor-preview-sub{color:#64748b;font-size:13px;margin-top:4px}.cor-preview-total{margin-top:5px;font-weight:800}.cor-stock-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(115px,1fr));gap:8px;margin-top:13px}.cor-stock-chip{border:1px solid #cbd5e1;border-radius:9px;background:#fff;padding:8px;text-align:center}.cor-stock-chip b{display:block;font-size:15px}.cor-stock-chip span{display:block;color:#64748b;font-size:12px;margin-top:2px}.cor-selected{border-color:#22c55e;background:#f0fdf4}.cor-no-results{color:#64748b;font-size:13px;padding:8px 2px}.history-edit{background:#2563eb;color:#fff;border:0;border-radius:8px;padding:7px 11px;font-weight:700;cursor:pointer}.history-edit:hover{background:#1d4ed8}
+.history-edit-input{width:72px;padding:6px 7px;border:1px solid #94a3b8;border-radius:7px;font-weight:700;text-align:center}
+.history-edit-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.history-edit-save{background:#16a34a;color:#fff;border:0;border-radius:8px;padding:7px 11px;font-weight:700;cursor:pointer}
+.history-edit-cancel{background:#fff;color:#111827;border:1px solid #cbd5e1;border-radius:8px;padding:7px 11px;font-weight:700;cursor:pointer}
+.history-delete{background:#dc2626;color:#fff;border:0;border-radius:8px;padding:7px 11px;font-weight:700;cursor:pointer}.history-delete:hover{background:#b91c1c}.history-delete:disabled{opacity:.55;cursor:not-allowed}
+.reset-danger{margin-top:8px;border:0;background:#b91c1c;color:#fff;padding:10px 14px;border-radius:8px;font-weight:800;cursor:pointer}.reset-danger:hover{background:#991b1b}
 .stock-image-wrap{position:relative;width:72px;height:72px;flex:0 0 72px}.stock-image-wrap img{width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid #ddd;display:block}.stock-image-wrap .stock-model-fallback{position:absolute;inset:0;align-items:center;justify-content:center;border:1px solid #ddd;border-radius:10px;background:#f8fafc;font-size:28px}</style>
 </head>
 <body>
@@ -107,14 +113,14 @@ table{width:100%;border-collapse:collapse;margin-top:14px}th,td{padding:9px;bord
 </div>
 <div id="stockCards" class="stock-cards"></div>
 </div>
-<div class="panel"><h2>Stock In History</h2><div id="stockHistory"></div></div>
+<div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h2 style="margin:0">Stock In History</h2><button class="history-delete" onclick="deleteAllHistoryType('stock_in')">🗑 Delete All Stock In</button></div><div id="stockHistory"></div></div>
 </section>
 
 <section id="sales" class="page">
 <div class="panel"><h2>🛒 Stock Out / Sale</h2>
 <form id="saleForm"><label>Model<select id="saleModel" required></select></label><label>Date<input id="saleDate" type="date" required></label><label>Payment<select id="payment"><option>Cash</option><option>Transfer</option><option>Credit</option></select></label>
 <div style="grid-column:1/-1"><div id="saleSizes" class="size-grid"></div></div><button class="primary">Save Sale</button></form></div>
-<div class="panel"><h2>Sales History</h2><div id="salesHistory"></div></div>
+<div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h2 style="margin:0">Sales History</h2><button class="history-delete" onclick="deleteAllHistoryType('sales')">🗑 Delete All Sales</button></div><div id="salesHistory"></div></div>
 </section>
 
 <section id="correction" class="page">
@@ -133,12 +139,12 @@ table{width:100%;border-collapse:collapse;margin-top:14px}th,td{padding:9px;bord
 <div style="grid-column:1/-1"><div id="corSizes" class="size-grid"></div></div>
 <button class="primary">Save Correction</button>
 </form></div>
-<div class="panel"><h2>Correction History</h2><div id="corHistory"></div></div>
+<div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h2 style="margin:0">Correction History</h2><button class="history-delete" onclick="deleteAllHistoryType('stock_corrections')">🗑 Delete All Corrections</button></div><div id="corHistory"></div></div>
 </section>
 
 <section id="reports" class="page"><div class="cards"><div class="card"><div class="muted">Purchase Value</div><div class="value" id="rPurchase">$0</div></div><div class="card"><div class="muted">Revenue</div><div class="value" id="rRevenue">$0</div></div><div class="card"><div class="muted">Gross Profit</div><div class="value" id="rProfit">$0</div></div></div><div class="panel"><h2>Monthly Revenue</h2><div id="months"></div></div></section>
 
-<section id="backup" class="page"><div class="panel"><h2>📥 Import / 📤 Export</h2><p class="muted">This transfers data; it does not copy the old local stock automatically.</p><button class="primary" onclick="exportJSON()">Full JSON Backup</button> <button class="secondary" onclick="exportCSV()">Inventory CSV</button><br><br><input id="importFile" type="file" accept=".json,application/json"> <button class="secondary" onclick="importJSON()">Import JSON</button><p id="importMsg" class="muted"></p></div><div class="panel"><h2>🧹 Start Fresh</h2><div class="notice">This keeps your shoe models, sizes and images, but removes all Stock In, Sales and Stock Correction transactions. Current stock will become 0.</div><button class="reset-danger" onclick="resetAllTransactions()">Delete All Stock & Transaction History</button></div></section>
+<section id="backup" class="page"><div class="panel"><h2>📥 Import / 📤 Export</h2><p class="muted">This transfers data; it does not copy the old local stock automatically.</p><button class="primary" onclick="exportJSON()">Full JSON Backup</button> <button class="secondary" onclick="exportCSV()">Inventory CSV</button><br><br><input id="importFile" type="file" accept=".json,application/json"> <button class="secondary" onclick="importJSON()">Import JSON</button><p id="importMsg" class="muted"></p></div><div class="panel"><h2>🧹 Start Fresh</h2><div class="notice">You can delete individual history records from Stock In, Sales, or Stock Correction. This button removes ALL three transaction types while keeping your shoe models, sizes and images. Current stock will become 0.</div><button class="reset-danger" onclick="resetAllTransactions()">Delete All Stock & Transaction History</button></div></section>
 </main>
 
 <div id="toast"></div>
@@ -974,23 +980,40 @@ async function renderStock(){
   if(r.error)return stockHistory.innerHTML='<div class="empty">Stock history is not available.</div>';
   const ids=r.data.map(x=>x.id);
   if(!ids.length){stockHistory.innerHTML='<div class="empty">No stock-in records yet.</div>';return}
-  const d=await db.from('stock_in_items').select('stock_in_id,shoe_size_id,quantity,unit_cost').in('stock_in_id',ids);
+  const d=await db.from('stock_in_items').select('id,stock_in_id,shoe_size_id,quantity,unit_cost').in('stock_in_id',ids);
   if(d.error)return stockHistory.innerHTML='<div class="empty">Stock items could not be loaded.</div>';
+
   stockHistory.innerHTML=(r.data||[]).map(h=>{
-    const items=(d.data||[]).filter(i=>i.stock_in_id===h.id);
+    const items=(d.data||[]).filter(i=>String(i.stock_in_id)===String(h.id));
     if(!items.length)return '';
-    const modelCodes=[...new Set(items.map(i=>{const sz=sizes.find(z=>z.id===i.shoe_size_id);return models.find(m=>m.id===sz?.model_id)?.model_code||''}).filter(Boolean))].join(', ');
-    const total=items.reduce((a,i)=>a+(+i.quantity||0),0);
-    return `<div class="history-group">
+    const modelCodes=[...new Set(items.map(i=>{
+      const sz=sizes.find(z=>String(z.id)===String(i.shoe_size_id));
+      return models.find(m=>String(m.id)===String(sz?.model_id))?.model_code||''
+    }).filter(Boolean))].join(', ');
+    const total=items.reduce((a,i)=>a+(Number(i.quantity)||0),0);
+
+    return `<div class="history-group" id="stock-in-history-${esc(h.id)}">
       <div class="history-head">
-        <div><div class="history-title">📦 Stock In — ${esc(modelCodes||'Model')}</div>
-        <div class="history-meta">Date: ${esc(h.transaction_date)}${h.supplier?' • Supplier: '+esc(h.supplier):''}${h.note?' • Ref: '+esc(h.note):''}</div></div>
-        <div class="history-title">${total} pairs</div>
+        <div>
+          <div class="history-title">📦 Stock In — ${esc(modelCodes||'Model')}</div>
+          <div class="history-meta">Date: ${esc(h.transaction_date)}${h.supplier?' • Supplier: '+esc(h.supplier):''}${h.note?' • Ref: '+esc(h.note):''}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <div class="history-title">${total} pairs</div>
+          <button class="history-edit" onclick="editStockInHistory('${esc(h.id)}')">✏️ Edit</button>
+          <button class="history-delete" onclick="deleteStockInHistory('${esc(h.id)}')">Delete</button>
+        </div>
       </div>
-      <div class="size-chips">${items.map(i=>{const sz=sizes.find(z=>z.id===i.shoe_size_id);return `<span class="size-chip">Size <b>${sz?.size??''}</b> × ${i.quantity}</span>`}).join('')}</div>
+      <div class="size-chips">
+        ${items.map(i=>{
+          const sz=sizes.find(z=>String(z.id)===String(i.shoe_size_id));
+          return `<span class="size-chip" data-stock-item-id="${esc(i.id)}">Size <b>${sz?.size??''}</b> × <span class="history-qty">${Number(i.quantity)||0}</span></span>`;
+        }).join('')}
+      </div>
     </div>`;
   }).join('')||'<div class="empty">No stock-in records yet.</div>';
 }
+
 async function renderSales(){
   if(!sales.length){
     salesHistory.innerHTML='<div class="empty">No sales yet.</div>';
@@ -1001,12 +1024,7 @@ async function renderSales(){
   sales.forEach(x=>{
     const key=String(x.sale_id);
     if(!groups[key]){
-      groups[key]={
-        date:x.date||'',
-        customer:x.customer||'',
-        note:x.note||'',
-        items:[]
-      };
+      groups[key]={date:x.date||'',customer:x.customer||'',note:x.note||'',items:[]};
     }
     groups[key].items.push(x);
   });
@@ -1015,13 +1033,11 @@ async function renderSales(){
     const totalQty=g.items.reduce((a,x)=>a+(Number(x.quantity)||0),0);
     const total=g.items.reduce((a,x)=>a+(Number(x.total_amount)||0),0);
     const profit=g.items.reduce((a,x)=>a+(Number(x.profit)||0),0);
-
     let payment='';
-    if((g.note||'').startsWith('Payment: ')){
-      payment=g.note.replace('Payment: ','');
-    }
+    if((g.note||'').startsWith('Payment: ')) payment=g.note.replace('Payment: ','');
+    const saleId=g.items[0].sale_id;
 
-    return `<div class="history-group">
+    return `<div class="history-group" id="sale-history-${esc(saleId)}">
       <div class="history-head">
         <div>
           <div class="history-title">🛒 Stock Out / Sale</div>
@@ -1031,13 +1047,17 @@ async function renderSales(){
             ${payment?' • Payment: '+esc(payment):''}
           </div>
         </div>
-        <div class="history-title">${totalQty} pairs</div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <div class="history-title">${totalQty} pairs</div>
+          <button class="history-edit" onclick="editSaleHistory('${esc(saleId)}')">✏️ Edit</button>
+          <button class="history-delete" onclick="deleteSaleHistory('${esc(saleId)}')">Delete</button>
+        </div>
       </div>
       <div class="size-chips">
         ${g.items.map(x=>{
           const m=models.find(m=>String(m.id)===String(x.model_id));
-          return `<span class="size-chip">
-            ${esc(m?.model_code||'')} — Size <b>${x.size??''}</b> × ${x.quantity}
+          return `<span class="size-chip" data-sale-item-id="${esc(x.id)}">
+            ${esc(m?.model_code||'')} — Size <b>${x.size??''}</b> × <span class="history-qty">${Number(x.quantity)||0}</span>
           </span>`;
         }).join('')}
       </div>
@@ -1047,6 +1067,7 @@ async function renderSales(){
     </div>`;
   }).join('');
 }
+
 async function renderCorrection(){
   if(!corrections.length){
     corHistory.innerHTML='<div class="empty">No corrections yet.</div>';
@@ -1071,6 +1092,7 @@ async function renderCorrection(){
             Date: ${esc(g.date)}${g.reason?' • '+esc(g.reason):''}
           </div>
         </div>
+        <button class="history-delete" onclick="deleteCorrectionHistory('${esc(g.items[0].correction_id)}')">Delete</button>
       </div>
       <div class="size-chips">
         ${g.items.map(i=>{
@@ -1151,6 +1173,202 @@ correctionForm.onsubmit=async e=>{
     alert('Correction error:\n\n'+(err.message||err));
   }
 }
+
+
+function editStockInHistory(id){
+  const box=document.getElementById(`stock-in-history-${id}`);
+  if(!box)return;
+  const chips=[...box.querySelectorAll('[data-stock-item-id]')];
+  if(!chips.length)return;
+
+  chips.forEach(chip=>{
+    const qty=chip.querySelector('.history-qty')?.textContent.trim()||'0';
+    const sizeText=chip.querySelector('b')?.textContent.trim()||'';
+    chip.innerHTML=`Size <b>${esc(sizeText)}</b> × <input class="history-edit-input" type="number" min="0" step="1" value="${esc(qty)}" data-edit-stock-in-item="${esc(chip.dataset.stockItemId)}">`;
+  });
+
+  const head=box.querySelector('.history-head > div:last-child');
+  if(head){
+    head.querySelectorAll('button').forEach(b=>b.style.display='none');
+    const actions=document.createElement('div');
+    actions.className='history-edit-actions';
+    actions.innerHTML=`<button class="history-edit-save" onclick="saveStockInHistoryEdit('${esc(id)}')">Save</button><button class="history-edit-cancel" onclick="renderStock()">Cancel</button>`;
+    head.appendChild(actions);
+  }
+}
+
+async function saveStockInHistoryEdit(id){
+  const box=document.getElementById(`stock-in-history-${id}`);
+  if(!box)return;
+
+  const inputs=[...box.querySelectorAll('[data-edit-stock-in-item]')];
+  if(!inputs.length)return;
+
+  const ok=confirm('Save the new quantities for this Stock In transaction?');
+  if(!ok)return;
+
+  try{
+    for(const input of inputs){
+      const qty=Number(input.value);
+      if(!Number.isInteger(qty)||qty<0)throw new Error('Quantity must be a whole number of 0 or greater.');
+      const r=await db.from('stock_in_items')
+        .update({quantity:qty})
+        .eq('id',input.dataset.editStockInItem);
+      if(r.error)throw r.error;
+    }
+
+    msg('✅ Stock In quantity updated');
+    await load();
+    renderStockCards();
+    await renderStock();
+  }catch(err){
+    console.error(err);
+    alert(`Could not update Stock In.\n\n${err.message||err}`);
+  }
+}
+
+function editSaleHistory(id){
+  const box=document.getElementById(`sale-history-${id}`);
+  if(!box)return;
+  const chips=[...box.querySelectorAll('[data-sale-item-id]')];
+  if(!chips.length)return;
+
+  chips.forEach(chip=>{
+    const qty=chip.querySelector('.history-qty')?.textContent.trim()||'0';
+    const sizeText=chip.querySelector('b')?.textContent.trim()||'';
+    const modelText=chip.textContent.split('—')[0].trim();
+    chip.innerHTML=`${esc(modelText)} — Size <b>${esc(sizeText)}</b> × <input class="history-edit-input" type="number" min="0" step="1" value="${esc(qty)}" data-edit-sale-item="${esc(chip.dataset.saleItemId)}">`;
+  });
+
+  const head=box.querySelector('.history-head > div:last-child');
+  if(head){
+    head.querySelectorAll('button').forEach(b=>b.style.display='none');
+    const actions=document.createElement('div');
+    actions.className='history-edit-actions';
+    actions.innerHTML=`<button class="history-edit-save" onclick="saveSaleHistoryEdit('${esc(id)}')">Save</button><button class="history-edit-cancel" onclick="renderSales()">Cancel</button>`;
+    head.appendChild(actions);
+  }
+}
+
+async function saveSaleHistoryEdit(id){
+  const box=document.getElementById(`sale-history-${id}`);
+  if(!box)return;
+
+  const inputs=[...box.querySelectorAll('[data-edit-sale-item]')];
+  if(!inputs.length)return;
+
+  try{
+    // Prevent an edited sale from making stock negative.
+    for(const input of inputs){
+      const newQty=Number(input.value);
+      if(!Number.isInteger(newQty)||newQty<0)throw new Error('Quantity must be a whole number of 0 or greater.');
+
+      const item=(sales||[]).find(x=>String(x.id)===String(input.dataset.editSaleItem));
+      if(!item)throw new Error('Sale item could not be found.');
+
+      const current=stock.find(s=>String(s.shoe_size_id)===String(item.shoe_size_id));
+      const availableAfterRemovingThisSale=(Number(current?.current_stock)||0)+(Number(item.quantity)||0);
+      if(newQty>availableAfterRemovingThisSale){
+        const sz=sizes.find(z=>String(z.id)===String(item.shoe_size_id));
+        throw new Error(`Size ${sz?.size??''} cannot be set to ${newQty}. Maximum allowed is ${availableAfterRemovingThisSale} pairs.`);
+      }
+    }
+
+    const ok=confirm('Save the new quantities for this Sale / Stock Out transaction?');
+    if(!ok)return;
+
+    for(const input of inputs){
+      const qty=Number(input.value);
+      const r=await db.from('sale_items').update({quantity:qty}).eq('id',input.dataset.editSaleItem);
+      if(r.error)throw r.error;
+    }
+
+    msg('✅ Sale quantity updated');
+    await load();
+    renderStockCards();
+    await renderSales();
+  }catch(err){
+    console.error(err);
+    alert(`Could not update Sale.\n\n${err.message||err}`);
+  }
+}
+
+async function deleteTransactionRows(detailTable, headerTable, headerId, label){
+  const ok=confirm(`Delete this ${label} record?\n\nThis will remove the history record and its stock effect.\n\nThis action cannot be undone.`);
+  if(!ok)return;
+
+  try{
+    const d=await db.from(detailTable).delete().eq(
+      detailTable==='stock_in_items' ? 'stock_in_id' :
+      detailTable==='sale_items' ? 'sale_id' : 'correction_id',
+      headerId
+    );
+    if(d.error)throw d.error;
+
+    const h=await db.from(headerTable).delete().eq('id',headerId);
+    if(h.error)throw h.error;
+
+    msg(`✅ ${label} deleted`);
+    await load();
+    renderStockCards();
+    if(document.getElementById('stockHistory')) await renderStock();
+    if(document.getElementById('salesHistory')) await renderSales();
+    if(document.getElementById('corHistory')) await renderCorrection();
+  }catch(err){
+    console.error('Delete history error:',err);
+    alert(`Could not delete ${label}.\n\n${err.message||err}\n\nIf Supabase blocks DELETE because of RLS, use the SQL method below.`);
+  }
+}
+
+async function deleteStockInHistory(id){
+  await deleteTransactionRows('stock_in_items','stock_in',id,'Stock In');
+}
+
+async function deleteSaleHistory(id){
+  await deleteTransactionRows('sale_items','sales',id,'Sale');
+}
+
+async function deleteCorrectionHistory(id){
+  await deleteTransactionRows('stock_correction_items','stock_corrections',id,'Stock Correction');
+}
+
+async function deleteAllHistoryType(type){
+  const config={
+    stock_in:{detail:'stock_in_items',header:'stock_in',label:'ALL Stock In history'},
+    sales:{detail:'sale_items',header:'sales',label:'ALL Sales history'},
+    stock_corrections:{detail:'stock_correction_items',header:'stock_corrections',label:'ALL Stock Correction history'}
+  }[type];
+
+  if(!config)return;
+
+  const ok=confirm(`Delete ${config.label}?\n\nThis changes current stock because these transactions are part of the stock calculation.\n\nYour shoe models, sizes and images will NOT be deleted.\n\nContinue?`);
+  if(!ok)return;
+
+  const typed=prompt(`Type DELETE to permanently remove ${config.label}:`);
+  if(typed!=='DELETE'){
+    alert('Cancelled. Nothing was deleted.');
+    return;
+  }
+
+  try{
+    const d=await db.from(config.detail).delete().not('id','is',null);
+    if(d.error)throw new Error(config.detail+': '+d.error.message);
+
+    const h=await db.from(config.header).delete().not('id','is',null);
+    if(h.error)throw new Error(config.header+': '+h.error.message);
+
+    msg(`✅ ${config.label} deleted`);
+    await load();
+    renderStockCards();
+    await renderStock();
+    await renderSales();
+    await renderCorrection();
+  }catch(err){
+    console.error('Delete all history error:',err);
+    alert(`Could not delete ${config.label}.\n\n${err.message||err}\n\nIf Supabase blocks DELETE because of RLS, use the SQL method instead.`);
+  }
+}
+
 async function resetAllTransactions(){
   const ok=confirm('START FRESH?\n\nThis will permanently delete ALL Stock In, Sales, and Stock Correction history.\n\nYour shoe models, sizes and images will NOT be deleted.\nCurrent stock will become 0.\n\nContinue?');
   if(!ok)return;
