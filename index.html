@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="ksb-build" content="FIXED-V3-NO-CUSTOMER">
+<meta name="ksb-build" content="FIXED-V4-CLICK-SHOE">
 <title>Little Steps — Shoe Business Manager</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -41,7 +41,7 @@ table{width:100%;border-collapse:collapse;margin-top:14px}th,td{padding:9px;bord
 .modal.show{display:flex}.modal-card{background:#fff;border-radius:14px;padding:20px;width:min(900px,100%);max-height:92vh;overflow:auto}
 @media(max-width:700px){header{align-items:flex-start;flex-direction:column}main{padding:12px}table{min-width:900px}}
 
-.cor-model-results{display:flex;flex-direction:column;gap:8px;margin-top:8px}.cor-model-result{display:flex;align-items:center;gap:12px;border:1px solid #cbd5e1;border-radius:12px;padding:9px 11px;background:#fff;cursor:pointer}.cor-model-result:hover{background:#f8fafc;border-color:#94a3b8;box-shadow:0 2px 8px #00000010}.cor-model-result img,.cor-model-result-fallback{width:72px;height:72px;flex:0 0 72px;border-radius:9px;border:1px solid #ddd;object-fit:cover;background:#fff}.cor-model-result-fallback{display:flex;align-items:center;justify-content:center;background:#f8fafc;font-size:30px}.cor-result-code{font-weight:800;font-size:16px}.cor-result-meta{color:#64748b;font-size:13px;margin-top:3px}.cor-result-stock{font-weight:800;font-size:13px;margin-top:5px}.cor-model-preview{margin-top:10px;border:1px solid #e2e8f0;border-radius:13px;background:#f8fafc;padding:14px}.cor-preview-head{display:flex;gap:14px;align-items:center}.cor-preview-image,.cor-preview-fallback{width:130px;height:130px;flex:0 0 130px;border-radius:12px;border:1px solid #ddd;object-fit:cover;background:#fff}.cor-preview-fallback{display:flex;align-items:center;justify-content:center;font-size:42px}.cor-preview-title{font-size:18px;font-weight:800}.cor-preview-sub{color:#64748b;font-size:13px;margin-top:4px}.cor-preview-total{margin-top:5px;font-weight:800}.cor-stock-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(115px,1fr));gap:8px;margin-top:13px}.cor-stock-chip{border:1px solid #cbd5e1;border-radius:9px;background:#fff;padding:8px;text-align:center}.cor-stock-chip b{display:block;font-size:15px}.cor-stock-chip span{display:block;color:#64748b;font-size:12px;margin-top:2px}.cor-selected{border-color:#22c55e;background:#f0fdf4}.cor-no-results{color:#64748b;font-size:13px;padding:8px 2px}.reset-danger{margin-top:8px;border:0;background:#b91c1c;color:#fff;padding:10px 14px;border-radius:8px;font-weight:800;cursor:pointer}.reset-danger:hover{background:#991b1b}
+.cor-model-results{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:10px}.cor-model-result{display:flex;flex-direction:column;align-items:center;gap:7px;border:1px solid #cbd5e1;border-radius:13px;padding:10px;background:#fff;cursor:pointer;text-align:center;transition:.15s}.cor-model-result:hover{background:#f8fafc;border-color:#2563eb;box-shadow:0 3px 12px #00000012;transform:translateY(-1px)}.cor-model-result.cor-selected{border-color:#22c55e;background:#f0fdf4}.cor-model-result img,.cor-model-result-fallback{width:112px;height:112px;flex:0 0 112px;border-radius:10px;border:1px solid #ddd;object-fit:cover;background:#fff}.cor-model-result-fallback{display:flex;align-items:center;justify-content:center;background:#f8fafc;font-size:40px}.cor-result-code{font-weight:800;font-size:15px;line-height:1.2}.cor-result-meta{color:#64748b;font-size:12px;margin-top:1px}.cor-result-stock{font-weight:800;font-size:12px;margin-top:2px;color:#166534}.cor-click-hint{font-size:11px;color:#64748b;margin-top:2px}.cor-model-preview{margin-top:10px;border:1px solid #e2e8f0;border-radius:13px;background:#f8fafc;padding:14px}.cor-preview-head{display:flex;gap:14px;align-items:center}.cor-preview-image,.cor-preview-fallback{width:130px;height:130px;flex:0 0 130px;border-radius:12px;border:1px solid #ddd;object-fit:cover;background:#fff}.cor-preview-fallback{display:flex;align-items:center;justify-content:center;font-size:42px}.cor-preview-title{font-size:18px;font-weight:800}.cor-preview-sub{color:#64748b;font-size:13px;margin-top:4px}.cor-preview-total{margin-top:5px;font-weight:800}.cor-stock-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(115px,1fr));gap:8px;margin-top:13px}.cor-stock-chip{border:1px solid #cbd5e1;border-radius:9px;background:#fff;padding:8px;text-align:center}.cor-stock-chip b{display:block;font-size:15px}.cor-stock-chip span{display:block;color:#64748b;font-size:12px;margin-top:2px}.cor-selected{border-color:#22c55e;background:#f0fdf4}.cor-no-results{color:#64748b;font-size:13px;padding:8px 2px}.reset-danger{margin-top:8px;border:0;background:#b91c1c;color:#fff;padding:10px 14px;border-radius:8px;font-weight:800;cursor:pointer}.reset-danger:hover{background:#991b1b}
 .stock-image-wrap{position:relative;width:72px;height:72px;flex:0 0 72px}.stock-image-wrap img{width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid #ddd;display:block}.stock-image-wrap .stock-model-fallback{position:absolute;inset:0;align-items:center;justify-content:center;border:1px solid #ddd;border-radius:10px;background:#f8fafc;font-size:28px}</style>
 </head>
 <body>
@@ -118,15 +118,15 @@ table{width:100%;border-collapse:collapse;margin-top:14px}th,td{padding:9px;bord
 </section>
 
 <section id="correction" class="page">
-<div class="panel"><h2>🔄 Stock Correction</h2><div class="notice">Search a shoe model first. The model image and current stock by size will appear before you make a correction.</div>
+<div class="panel"><h2>🔄 Stock Correction</h2><div class="notice">Search or click a shoe image below. Click the shoe image to instantly see its current stock by size, then make a correction.</div>
 <form id="correctionForm">
 <div style="grid-column:1/-1">
 <label>Search Model
-<input id="corModelSearch" type="search" placeholder="Type model code, name or color..." autocomplete="off" oninput="searchCorrectionModel()">
+<input id="corModelSearch" type="search" placeholder="Search model/code/color, or simply click a shoe image below..." autocomplete="off" oninput="searchCorrectionModel()">
 </label>
 <div id="corModelResults" class="cor-model-results"></div>
 <select id="corModel" required style="display:none"></select>
-<div id="corModelPreview" class="cor-model-preview empty">Search and select a model to see its image and current stock.</div>
+<div id="corModelPreview" class="cor-model-preview empty">Click a shoe image above to see its current stock.</div>
 </div>
 <label>Date<input id="corDate" type="date" required></label>
 <label>Reason<input id="corReason" placeholder="Counting error / damaged / found"></label>
@@ -435,35 +435,57 @@ function searchCorrectionModel(){
   const input=document.getElementById('corModelSearch');
   const results=document.getElementById('corModelResults');
   const q=(input?.value||'').trim().toLowerCase();
-  if(!q){results.innerHTML='';return;}
-  const list=models.filter(m=>[m.model_code,m.model_name,m.color].join(' ').toLowerCase().includes(q)).slice(0,8);
-  if(!list.length){results.innerHTML='<div class="cor-no-results">No matching shoe model found.</div>';return;}
+
+  // Show every shoe as a clickable image when the search box is empty.
+  // Typing filters the shoe images by code, name, or color.
+  const list=models
+    .filter(m=>!q || [m.model_code,m.model_name,m.color].join(' ').toLowerCase().includes(q))
+    .slice(0,24);
+
+  if(!list.length){
+    results.innerHTML='<div class="cor-no-results">No matching shoe model found.</div>';
+    return;
+  }
+
   results.innerHTML=list.map(m=>{
     const modelSizes=sizes.filter(z=>String(z.model_id)===String(m.id));
     const total=modelSizes.reduce((sum,z)=>sum+currentQty(m.id,z.size),0);
-    return `<div class="cor-model-result" data-id="${esc(m.id)}">
-      <div>${correctionImage(m.image_url,false)}</div>
-      <div style="min-width:0;flex:1">
-        <div class="cor-result-code">${esc(m.model_code)} — ${esc(m.model_name)}</div>
-        <div class="cor-result-meta">Color: ${esc(m.color||'-')}</div>
-        <div class="cor-result-stock">Current stock: ${total} pairs</div>
-      </div>
+    return `<div class="cor-model-result" data-id="${esc(m.id)}" title="Click this shoe image to view current stock">
+      ${correctionImage(m.image_url,false)}
+      <div class="cor-result-code">${esc(m.model_code)} — ${esc(m.model_name)}</div>
+      <div class="cor-result-meta">${esc(m.color||'-')}</div>
+      <div class="cor-result-stock">${total} pairs in stock</div>
+      <div class="cor-click-hint">👆 Click shoe image</div>
     </div>`;
   }).join('');
-  results.querySelectorAll('.cor-model-result').forEach(el=>el.onclick=()=>selectCorrectionModel(el.dataset.id));
+
+  results.querySelectorAll('.cor-model-result').forEach(el=>{
+    el.addEventListener('click',()=>selectCorrectionModel(el.dataset.id));
+  });
 }
 function selectCorrectionModel(id){
   const m=models.find(x=>String(x.id)===String(id));
   if(!m)return;
+
   document.getElementById('corModel').value=m.id;
   document.getElementById('corModelSearch').value=correctionModelText(m);
-  document.getElementById('corModelResults').innerHTML='';
+
+  // Keep the shoe images visible and highlight the selected one.
+  searchCorrectionModel();
+  document.querySelectorAll('#corModelResults .cor-model-result').forEach(el=>{
+    el.classList.toggle('cor-selected', String(el.dataset.id)===String(id));
+  });
+
+  // Load current stock by size immediately after clicking the shoe.
   sizeInputs('corModel');
+
+  const preview=document.getElementById('corModelPreview');
+  if(preview) preview.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 function renderCorrectionPreview(m){
   const box=document.getElementById('corModelPreview');
   if(!box)return;
-  if(!m){box.className='cor-model-preview empty';box.innerHTML='Search and select a model to see its image and current stock.';return;}
+  if(!m){box.className='cor-model-preview empty';box.innerHTML='Click a shoe image above to see its current stock.';return;}
   const modelSizes=sizes.filter(x=>String(x.model_id)===String(m.id)).map(x=>Number(x.size)).sort((a,b)=>a-b);
   const total=modelSizes.reduce((sum,n)=>sum+currentQty(m.id,n),0);
   box.className='cor-model-preview';
