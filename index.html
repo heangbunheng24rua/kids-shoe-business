@@ -41,7 +41,7 @@ table{width:100%;border-collapse:collapse;margin-top:14px}th,td{padding:9px;bord
 .modal.show{display:flex}.modal-card{background:#fff;border-radius:14px;padding:20px;width:min(900px,100%);max-height:92vh;overflow:auto}
 @media(max-width:700px){header{align-items:flex-start;flex-direction:column}main{padding:12px}table{min-width:900px}}
 
-.cor-model-results{display:flex;flex-direction:column;gap:7px;margin-top:7px}.cor-model-result{display:flex;align-items:center;gap:10px;border:1px solid #cbd5e1;border-radius:10px;padding:8px 10px;background:#fff;cursor:pointer}.cor-model-result:hover{background:#f8fafc;border-color:#94a3b8}.cor-model-result img,.cor-model-result-fallback{width:48px;height:48px;flex:0 0 48px;border-radius:8px;border:1px solid #ddd;object-fit:cover}.cor-model-result-fallback{display:flex;align-items:center;justify-content:center;background:#f8fafc;font-size:22px}.cor-model-preview{margin-top:10px;border:1px solid #e2e8f0;border-radius:13px;background:#f8fafc;padding:14px}.cor-preview-head{display:flex;gap:14px;align-items:center}.cor-preview-image,.cor-preview-fallback{width:110px;height:110px;flex:0 0 110px;border-radius:12px;border:1px solid #ddd;object-fit:cover;background:#fff}.cor-preview-fallback{display:flex;align-items:center;justify-content:center;font-size:42px}.cor-preview-title{font-size:18px;font-weight:800}.cor-preview-sub{color:#64748b;font-size:13px;margin-top:4px}.cor-preview-total{margin-top:5px;font-weight:800}.cor-stock-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(115px,1fr));gap:8px;margin-top:13px}.cor-stock-chip{border:1px solid #cbd5e1;border-radius:9px;background:#fff;padding:8px;text-align:center}.cor-stock-chip b{display:block;font-size:15px}.cor-stock-chip span{display:block;color:#64748b;font-size:12px;margin-top:2px}.cor-selected{border-color:#22c55e;background:#f0fdf4}.cor-no-results{color:#64748b;font-size:13px;padding:8px 2px}
+.cor-model-results{display:flex;flex-direction:column;gap:8px;margin-top:8px}.cor-model-result{display:flex;align-items:center;gap:12px;border:1px solid #cbd5e1;border-radius:12px;padding:9px 11px;background:#fff;cursor:pointer}.cor-model-result:hover{background:#f8fafc;border-color:#94a3b8;box-shadow:0 2px 8px #00000010}.cor-model-result img,.cor-model-result-fallback{width:72px;height:72px;flex:0 0 72px;border-radius:9px;border:1px solid #ddd;object-fit:cover;background:#fff}.cor-model-result-fallback{display:flex;align-items:center;justify-content:center;background:#f8fafc;font-size:30px}.cor-result-code{font-weight:800;font-size:16px}.cor-result-meta{color:#64748b;font-size:13px;margin-top:3px}.cor-result-stock{font-weight:800;font-size:13px;margin-top:5px}.cor-model-preview{margin-top:10px;border:1px solid #e2e8f0;border-radius:13px;background:#f8fafc;padding:14px}.cor-preview-head{display:flex;gap:14px;align-items:center}.cor-preview-image,.cor-preview-fallback{width:130px;height:130px;flex:0 0 130px;border-radius:12px;border:1px solid #ddd;object-fit:cover;background:#fff}.cor-preview-fallback{display:flex;align-items:center;justify-content:center;font-size:42px}.cor-preview-title{font-size:18px;font-weight:800}.cor-preview-sub{color:#64748b;font-size:13px;margin-top:4px}.cor-preview-total{margin-top:5px;font-weight:800}.cor-stock-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(115px,1fr));gap:8px;margin-top:13px}.cor-stock-chip{border:1px solid #cbd5e1;border-radius:9px;background:#fff;padding:8px;text-align:center}.cor-stock-chip b{display:block;font-size:15px}.cor-stock-chip span{display:block;color:#64748b;font-size:12px;margin-top:2px}.cor-selected{border-color:#22c55e;background:#f0fdf4}.cor-no-results{color:#64748b;font-size:13px;padding:8px 2px}.reset-danger{margin-top:8px;border:0;background:#b91c1c;color:#fff;padding:10px 14px;border-radius:8px;font-weight:800;cursor:pointer}.reset-danger:hover{background:#991b1b}
 .stock-image-wrap{position:relative;width:72px;height:72px;flex:0 0 72px}.stock-image-wrap img{width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid #ddd;display:block}.stock-image-wrap .stock-model-fallback{position:absolute;inset:0;align-items:center;justify-content:center;border:1px solid #ddd;border-radius:10px;background:#f8fafc;font-size:28px}</style>
 </head>
 <body>
@@ -138,7 +138,7 @@ table{width:100%;border-collapse:collapse;margin-top:14px}th,td{padding:9px;bord
 
 <section id="reports" class="page"><div class="cards"><div class="card"><div class="muted">Purchase Value</div><div class="value" id="rPurchase">$0</div></div><div class="card"><div class="muted">Revenue</div><div class="value" id="rRevenue">$0</div></div><div class="card"><div class="muted">Gross Profit</div><div class="value" id="rProfit">$0</div></div></div><div class="panel"><h2>Monthly Revenue</h2><div id="months"></div></div></section>
 
-<section id="backup" class="page"><div class="panel"><h2>📥 Import / 📤 Export</h2><p class="muted">This transfers data; it does not copy the old local stock automatically.</p><button class="primary" onclick="exportJSON()">Full JSON Backup</button> <button class="secondary" onclick="exportCSV()">Inventory CSV</button><br><br><input id="importFile" type="file" accept=".json,application/json"> <button class="secondary" onclick="importJSON()">Import JSON</button><p id="importMsg" class="muted"></p></div></section>
+<section id="backup" class="page"><div class="panel"><h2>📥 Import / 📤 Export</h2><p class="muted">This transfers data; it does not copy the old local stock automatically.</p><button class="primary" onclick="exportJSON()">Full JSON Backup</button> <button class="secondary" onclick="exportCSV()">Inventory CSV</button><br><br><input id="importFile" type="file" accept=".json,application/json"> <button class="secondary" onclick="importJSON()">Import JSON</button><p id="importMsg" class="muted"></p></div><div class="panel"><h2>🧹 Start Fresh</h2><div class="notice">This keeps your shoe models, sizes and images, but removes all Stock In, Sales and Stock Correction transactions. Current stock will become 0.</div><button class="reset-danger" onclick="resetAllTransactions()">Delete All Stock & Transaction History</button></div></section>
 </main>
 
 <div id="toast"></div>
@@ -438,7 +438,18 @@ function searchCorrectionModel(){
   if(!q){results.innerHTML='';return;}
   const list=models.filter(m=>[m.model_code,m.model_name,m.color].join(' ').toLowerCase().includes(q)).slice(0,8);
   if(!list.length){results.innerHTML='<div class="cor-no-results">No matching shoe model found.</div>';return;}
-  results.innerHTML=list.map(m=>`<div class="cor-model-result" data-id="${esc(m.id)}"><div style="width:48px;height:48px;flex:0 0 48px">${correctionImage(m.image_url,false)}</div><div><b>${esc(m.model_code)} — ${esc(m.model_name)}</b><div class="muted">${esc(m.color||'')}</div></div></div>`).join('');
+  results.innerHTML=list.map(m=>{
+    const modelSizes=sizes.filter(z=>String(z.model_id)===String(m.id));
+    const total=modelSizes.reduce((sum,z)=>sum+currentQty(m.id,z.size),0);
+    return `<div class="cor-model-result" data-id="${esc(m.id)}">
+      <div>${correctionImage(m.image_url,false)}</div>
+      <div style="min-width:0;flex:1">
+        <div class="cor-result-code">${esc(m.model_code)} — ${esc(m.model_name)}</div>
+        <div class="cor-result-meta">Color: ${esc(m.color||'-')}</div>
+        <div class="cor-result-stock">Current stock: ${total} pairs</div>
+      </div>
+    </div>`;
+  }).join('');
   results.querySelectorAll('.cor-model-result').forEach(el=>el.onclick=()=>selectCorrectionModel(el.dataset.id));
 }
 function selectCorrectionModel(id){
@@ -649,8 +660,12 @@ async function replaceSizes(id,z){
 }
 function imageSrc(v){
   if(!v)return '';
-  const s=String(v);
+  const s=String(v).trim();
   if(s.startsWith('data:image/')||s.startsWith('https://')||s.startsWith('http://'))return s;
+  // Also support a stored Supabase Storage path such as models/abc.jpg.
+  if(s.startsWith('models/')){
+    try{return db.storage.from('shoe-images').getPublicUrl(s).data.publicUrl||''}catch(e){return ''}
+  }
   return '';
 }
 function imageHtml(v){
@@ -1114,6 +1129,36 @@ correctionForm.onsubmit=async e=>{
     alert('Correction error:\n\n'+(err.message||err));
   }
 }
+async function resetAllTransactions(){
+  const ok=confirm('START FRESH?\n\nThis will permanently delete ALL Stock In, Sales, and Stock Correction history.\n\nYour shoe models, sizes and images will NOT be deleted.\nCurrent stock will become 0.\n\nContinue?');
+  if(!ok)return;
+  const typed=prompt('Type RESET to confirm deleting all transaction history:');
+  if(typed!=='RESET'){
+    alert('Reset cancelled. Nothing was deleted.');
+    return;
+  }
+  try{
+    // Delete detail rows first because they reference the transaction headers.
+    const detailTables=['stock_in_items','sale_items','stock_correction_items'];
+    for(const table of detailTables){
+      const r=await db.from(table).delete().not('id','is',null);
+      if(r.error)throw new Error(table+': '+r.error.message);
+    }
+    const headerTables=['stock_in','sales','stock_corrections'];
+    for(const table of headerTables){
+      const r=await db.from(table).delete().not('id','is',null);
+      if(r.error)throw new Error(table+': '+r.error.message);
+    }
+    alert('✅ All transaction history was deleted. Models and sizes were kept. Current stock is now 0.');
+    await load();
+    renderStockCards();
+    renderCorrection();
+  }catch(err){
+    console.error('Reset error:',err);
+    alert('Reset error:\n\n'+(err.message||err)+'\n\nIf Supabase blocks the delete because of RLS, use the SQL reset script instead.');
+  }
+}
+
 function renderReports(){
   const purchase=stock.reduce((sum,x)=>{
     const m=models.find(z=>String(z.id)===String(x.model_id));
