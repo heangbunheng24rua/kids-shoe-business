@@ -687,42 +687,39 @@ async function saveModelStock(model_id){
 
 saleForm.onsubmit=async e=>{
   e.preventDefault();
-  const model_id=saleModel.value, date=saleDate.value;
+
+  const model_id=saleModel.value;
+  const date=saleDate.value;
   const rows=[...document.querySelectorAll('#saleSizes .qty')].filter(x=>Number(x.value)>0);
   const m=models.find(x=>String(x.id)===String(model_id));
+
   if(!model_id)return alert('Please select a model.');
   if(!rows.length)return alert('Enter quantity for at least one size.');
 
   for(const x of rows){
-    const available=currentQty(model_id,x.dataset.size), qty=Number(x.value);
-    if(available<qty)return alert('Not enough stock for size '+x.dataset.size+'. Current stock: '+available);
+    const available=currentQty(model_id,x.dataset.size);
+    const qty=Number(x.value);
+    if(available<qty){
+      return alert('Not enough stock for size '+x.dataset.size+'. Current stock: '+available);
+    }
   }
 
-  const total_amount=rows.reduce((a,x)=>a+Number(x.value)*(Number(m?.selling_price)||0),0);
-  const profit=rows.reduce((a,x)=>a+Number(x.value)*((Number(m?.selling_price)||0)-(Number(m?.cost_price)||0)),0);
-
   try{
-    const head=await db.from('sales').insert({
-      date,
-      customer:customer.value.trim()||null,
+    // IMPORTANT:
+    // The existing "sales" table stores one row per model + size.
+    // It has no "customer" column, so we do not send customer to Supabase.
+    const saleRows=rows.map(x=>({
+      model_id:model_id,
+      size:Number(x.dataset.size),
+      quantity:Number(x.value),
+      date:date,
       payment:payment.value,
-      total_amount,
-      profit
-    }).select().single();
-    if(head.error)throw head.error;
+      total_amount:Number(x.value)*(Number(m?.selling_price)||0),
+      profit:Number(x.value)*((Number(m?.selling_price)||0)-(Number(m?.cost_price)||0))
+    }));
 
-    const modelSizes=sizes.filter(x=>String(x.model_id)===String(model_id));
-    const items=rows.map(x=>{
-      const sz=modelSizes.find(z=>Number(z.size)===Number(x.dataset.size));
-      if(!sz)throw new Error('Could not find Size '+x.dataset.size+' for this model.');
-      return {sale_id:head.data.id,shoe_size_id:sz.id,quantity:Number(x.value)};
-    });
-
-    const detail=await db.from('sale_items').insert(items);
-    if(detail.error){
-      await db.from('sales').delete().eq('id',head.data.id);
-      throw detail.error;
-    }
+    const ins=await db.from('sales').insert(saleRows);
+    if(ins.error)throw ins.error;
 
     msg('Sale saved');
     e.target.reset();
@@ -730,7 +727,7 @@ saleForm.onsubmit=async e=>{
     await load();
     sizeInputs('saleModel');
   }catch(err){
-    console.error(err);
+    console.error('Sale error:',err);
     alert('Sale error:\n\n'+(err.message||err));
   }
 }
