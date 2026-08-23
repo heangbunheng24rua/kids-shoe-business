@@ -173,16 +173,134 @@ function modelStockSummary(id){return ms(id).map(n=>{const r=stock.find(x=>Strin
 function setStatus(t,good){let x=document.getElementById('status');x.textContent=t;x.className='status '+(good?'ok':'bad')}
 
 async function load(){
- try{
-  let a=await db.from('shoe_models').select('*').order('model_code');if(a.error)throw a.error;models=a.data||[];
-  let b=await db.from('shoe_sizes').select('id,model_id,size').order('size');if(!b.error)sizes=b.data||[];
-  let c=await db.from('current_stock').select('*');if(!c.error)stock=c.data||[];
-  let d=await db.from('sales').select('*').order('created_at',{ascending:false});if(!d.error)sales=d.data||[];
-  let e=await db.from('stock_corrections').select('*').order('created_at',{ascending:false});if(!e.error)corrections=e.data||[];
-  setStatus('☁️ Cloud connected',true);document.getElementById('dModels').textContent=models.length;renderModels();fillSelects();renderDashboard()
- }catch(e){console.error(e);setStatus('❌ Database error',false);alert('Cloud connection error: '+e.message)}
+  try{
+    const a=await db.from('shoe_models').select('*').order('model_code');
+    if(a.error)throw a.error;
+    models=a.data||[];
+
+    const b=await db.from('shoe_sizes').select('id,model_id,size').order('size');
+    if(b.error)throw b.error;
+    sizes=b.data||[];
+
+    // The database does NOT have a current_stock table.
+    // Calculate current stock from the real transaction tables:
+    // Stock In - Sales + Stock Corrections.
+    const si=await db.from('stock_in_items').select('id,stock_in_id,shoe_size_id,quantity,unit_cost');
+    if(si.error)throw si.error;
+
+    const sa=await db.from('sale_items').select('id,sale_id,shoe_size_id,quantity,unit_price,unit_cost,created_at');
+    if(sa.error)throw sa.error;
+
+    const co=await db.from('stock_correction_items').select('id,correction_id,shoe_size_id,old_quantity,new_quantity,difference,created_at');
+    if(co.error)throw co.error;
+
+    const inMap={};
+    (si.data||[]).forEach(x=>{
+      const id=String(x.shoe_size_id);
+      inMap[id]=(inMap[id]||0)+Number(x.quantity||0);
+    });
+
+    const outMap={};
+    (sa.data||[]).forEach(x=>{
+      const id=String(x.shoe_size_id);
+      outMap[id]=(outMap[id]||0)+Number(x.quantity||0);
+    });
+
+    const correctionMap={};
+    (co.data||[]).forEach(x=>{
+      const id=String(x.shoe_size_id);
+      correctionMap[id]=(correctionMap[id]||0)+Number(x.difference||0);
+    });
+
+    stock=sizes.map(z=>({
+      shoe_size_id:z.id,
+      model_id:z.model_id,
+      size:Number(z.size),
+      current_stock:
+        (inMap[String(z.id)]||0) -
+        (outMap[String(z.id)]||0) +
+        (correctionMap[String(z.id)]||0)
+    }));
+
+    // Normalize sale items so the rest of the page can work with model/size.
+    const saleHeads=await db.from('sales')
+      .select('id,sale_date,customer_name,note,created_at')
+      .order('created_at',{ascending:false});
+    if(saleHeads.error)throw saleHeads.error;
+
+    const saleHeadMap={};
+    (saleHeads.data||[]).forEach(h=>saleHeadMap[String(h.id)]=h);
+
+    sales=(sa.data||[]).map(item=>{
+      const h=saleHeadMap[String(item.sale_id)]||{};
+      const sz=sizes.find(z=>String(z.id)===String(item.shoe_size_id));
+      const m=models.find(z=>String(z.id)===String(sz?.model_id));
+      const qty=Number(item.quantity||0);
+      const unitPrice=Number(item.unit_price||0);
+      const unitCost=Number(item.unit_cost||m?.cost_price||0);
+      return {
+        ...item,
+        sale_id:item.sale_id,
+        date:h.sale_date||'',
+        customer:h.customer_name||'',
+        note:h.note||'',
+        payment:'',
+        model_id:sz?.model_id||null,
+        size:sz?.size||null,
+        quantity:qty,
+        total_amount:qty*unitPrice,
+        profit:qty*(unitPrice-unitCost)
+      };
+    });
+
+    const corHeads=await db.from('stock_corrections')
+      .select('id,correction_date,reason,note,created_at')
+      .order('created_at',{ascending:false});
+    if(corHeads.error)throw corHeads.error;
+
+    corrections=(co.data||[]).map(item=>{
+      const h=(corHeads.data||[]).find(x=>String(x.id)===String(item.correction_id))||{};
+      const sz=sizes.find(z=>String(z.id)===String(item.shoe_size_id));
+      return {
+        ...item,
+        date:h.correction_date||'',
+        reason:h.reason||'',
+        note:h.note||''
+      };
+    });
+
+    setStatus('☁️ Cloud connected',true);
+    document.getElementById('dModels').textContent=models.length;
+    renderModels();
+    fillSelects();
+    renderDashboard();
+  }catch(e){
+    console.error('Database load error:',e);
+    setStatus('❌ Database error',false);
+    alert('Cloud database error:\n\n'+e.message);
+  }
 }
-function renderDashboard(){let total=stock.reduce((a,x)=>a+(+x.current_stock||0),0),revenue=sales.reduce((a,x)=>a+(+x.total_amount||0),0),profit=sales.reduce((a,x)=>a+(+x.profit||0),0);dStock.textContent=total;dRevenue.textContent='$'+revenue.toFixed(2);dProfit.textContent='$'+profit.toFixed(2);dAlerts.textContent=stock.filter(x=>(+x.current_stock||0)<=0).length;dashTable.innerHTML='<table><tr><th>Model</th><th>Pairs</th></tr>'+models.map(m=>{let q=stock.filter(x=>x.model_id===m.id).reduce((a,x)=>a+(+x.current_stock||0),0);return `<tr><td>${esc(m.model_code)} — ${esc(m.model_name)}</td><td>${q}</td></tr>`}).join('')+'</table>'}
+function renderDashboard(){
+  let total=stock.reduce((a,x)=>a+(Number(x.current_stock)||0),0);
+  let revenue=sales.reduce((a,x)=>a+(Number(x.total_amount)||0),0);
+  let profit=sales.reduce((a,x)=>a+(Number(x.profit)||0),0);
+
+  dStock.textContent=total;
+  dRevenue.textContent='$'+revenue.toFixed(2);
+  dProfit.textContent='$'+profit.toFixed(2);
+
+  dAlerts.textContent=stock.filter(x=>{
+    const m=models.find(z=>String(z.id)===String(x.model_id));
+    return m && Number(x.current_stock||0)<=Number(m.minimum_stock||0);
+  }).length;
+
+  dashTable.innerHTML='<table><tr><th>Model</th><th>Pairs</th></tr>'+
+    models.map(m=>{
+      let q=stock.filter(x=>String(x.model_id)===String(m.id))
+        .reduce((a,x)=>a+(Number(x.current_stock)||0),0);
+      return `<tr><td>${esc(m.model_code)} — ${esc(m.model_name)}</td><td>${q}</td></tr>`;
+    }).join('')+'</table>';
+}
 function fillSelects(){
   ['saleModel','corModel'].forEach(id=>{
     let x=document.getElementById(id);
@@ -542,7 +660,7 @@ async function delModel(id){
       const [si,sa,co]=await Promise.all([
         db.from('stock_in_items').select('stock_in_id').in('shoe_size_id',sizeIds),
         db.from('sale_items').select('sale_id').in('shoe_size_id',sizeIds),
-        db.from('stock_correction_items').select('stock_correction_id').in('shoe_size_id',sizeIds)
+        db.from('stock_correction_items').select('correction_id').in('shoe_size_id',sizeIds)
       ]);
       if(si.error)throw si.error;
       if(sa.error)throw sa.error;
@@ -550,7 +668,7 @@ async function delModel(id){
 
       const stockInIds=[...new Set((si.data||[]).map(x=>x.stock_in_id))];
       const saleIds=[...new Set((sa.data||[]).map(x=>x.sale_id))];
-      const correctionIds=[...new Set((co.data||[]).map(x=>x.stock_correction_id))];
+      const correctionIds=[...new Set((co.data||[]).map(x=>x.correction_id))];
 
       if(stockInIds.length){
         let r=await db.from('stock_in_items').delete().in('stock_in_id',stockInIds);
@@ -565,7 +683,7 @@ async function delModel(id){
         if(r.error)throw r.error;
       }
       if(correctionIds.length){
-        let r=await db.from('stock_correction_items').delete().in('stock_correction_id',correctionIds);
+        let r=await db.from('stock_correction_items').delete().in('correction_id',correctionIds);
         if(r.error)throw r.error;
         r=await db.from('stock_corrections').delete().in('id',correctionIds);
         if(r.error)throw r.error;
@@ -692,40 +810,62 @@ saleForm.onsubmit=async e=>{
 
   const model_id=saleModel.value;
   const date=saleDate.value;
-  const rows=[...document.querySelectorAll('#saleSizes .qty')].filter(x=>Number(x.value)>0);
+  const rows=[...document.querySelectorAll('#saleSizes .qty')]
+    .filter(x=>Number(x.value)>0);
   const m=models.find(x=>String(x.id)===String(model_id));
 
   if(!model_id)return alert('Please select a model.');
+  if(!date)return alert('Please select a date.');
   if(!rows.length)return alert('Enter quantity for at least one size.');
 
   for(const x of rows){
     const available=currentQty(model_id,x.dataset.size);
     const qty=Number(x.value);
     if(available<qty){
-      return alert('Not enough stock for size '+x.dataset.size+'. Current stock: '+available);
+      return alert('Not enough stock for size '+x.dataset.size+
+        '. Current stock: '+available);
     }
   }
 
   try{
-    // IMPORTANT:
-    // The existing "sales" table stores one row per model + size.
-    // It has no "customer" column, so we do not send customer to Supabase.
-    const saleRows=rows.map(x=>({
-      model_id:model_id,
-      size:Number(x.dataset.size),
+    // Your real sales table is a HEADER table:
+    // sales(id, sale_date, customer_name, note, created_at, customer)
+    // The size/quantity rows belong in sale_items.
+    const head=await db.from('sales').insert({
+      sale_date:date,
+      customer_name:null,
+      note:'Payment: '+payment.value
+    }).select().single();
+
+    if(head.error)throw head.error;
+
+    const saleItems=rows.map(x=>({
+      sale_id:head.data.id,
+      shoe_size_id:sizes.find(z=>
+        String(z.model_id)===String(model_id) &&
+        Number(z.size)===Number(x.dataset.size)
+      )?.id,
       quantity:Number(x.value),
-      date:date,
-      payment:payment.value,
-      total_amount:Number(x.value)*(Number(m?.selling_price)||0),
-      profit:Number(x.value)*((Number(m?.selling_price)||0)-(Number(m?.cost_price)||0))
+      unit_price:Number(m?.selling_price||0),
+      unit_cost:Number(m?.cost_price||0)
     }));
 
-    const ins=await db.from('sales').insert(saleRows);
-    if(ins.error)throw ins.error;
+    if(saleItems.some(x=>!x.shoe_size_id)){
+      await db.from('sales').delete().eq('id',head.data.id);
+      throw new Error('One or more selected shoe sizes could not be found.');
+    }
 
-    msg('Sale saved');
+    const detail=await db.from('sale_items').insert(saleItems);
+    if(detail.error){
+      await db.from('sales').delete().eq('id',head.data.id);
+      throw detail.error;
+    }
+
+    msg('✅ Sale saved');
     e.target.reset();
     saleDate.value=today;
+    payment.value='Cash';
+
     await load();
     sizeInputs('saleModel');
   }catch(err){
@@ -733,7 +873,6 @@ saleForm.onsubmit=async e=>{
     alert('Sale error:\n\n'+(err.message||err));
   }
 }
-
 async function renderStock(){
   const r=await db.from('stock_in').select('id,transaction_date,supplier,note,created_at').order('transaction_date',{ascending:false}).order('created_at',{ascending:false});
   if(r.error)return stockHistory.innerHTML='<div class="empty">Stock history is not available.</div>';
@@ -757,101 +896,191 @@ async function renderStock(){
   }).join('')||'<div class="empty">No stock-in records yet.</div>';
 }
 async function renderSales(){
-  if(!sales.length){salesHistory.innerHTML='<div class="empty">No sales yet.</div>';return}
+  if(!sales.length){
+    salesHistory.innerHTML='<div class="empty">No sales yet.</div>';
+    return;
+  }
+
   const groups={};
   sales.forEach(x=>{
-    const key=[x.date||x.transaction_date||'',x.customer||'',x.payment||''].join('|');
-    if(!groups[key])groups[key]={date:x.date||x.transaction_date||'',customer:x.customer||'',payment:x.payment||'',items:[]};
+    const key=String(x.sale_id);
+    if(!groups[key]){
+      groups[key]={
+        date:x.date||'',
+        customer:x.customer||'',
+        note:x.note||'',
+        items:[]
+      };
+    }
     groups[key].items.push(x);
   });
+
   salesHistory.innerHTML=Object.values(groups).map(g=>{
-    const totalQty=g.items.reduce((a,x)=>a+(+x.quantity||0),0);
-    const total=g.items.reduce((a,x)=>a+(+x.total_amount||0),0);
-    const profit=g.items.reduce((a,x)=>a+(+x.profit||0),0);
+    const totalQty=g.items.reduce((a,x)=>a+(Number(x.quantity)||0),0);
+    const total=g.items.reduce((a,x)=>a+(Number(x.total_amount)||0),0);
+    const profit=g.items.reduce((a,x)=>a+(Number(x.profit)||0),0);
+
+    let payment='';
+    if((g.note||'').startsWith('Payment: ')){
+      payment=g.note.replace('Payment: ','');
+    }
+
     return `<div class="history-group">
       <div class="history-head">
-        <div><div class="history-title">🛒 Stock Out / Sale</div>
-        <div class="history-meta">Date: ${esc(g.date)}${g.customer?' • Customer: '+esc(g.customer):''}${g.payment?' • Payment: '+esc(g.payment):''}</div></div>
+        <div>
+          <div class="history-title">🛒 Stock Out / Sale</div>
+          <div class="history-meta">
+            Date: ${esc(g.date)}
+            ${g.customer?' • Customer: '+esc(g.customer):''}
+            ${payment?' • Payment: '+esc(payment):''}
+          </div>
+        </div>
         <div class="history-title">${totalQty} pairs</div>
       </div>
-      <div class="size-chips">${g.items.map(x=>{const m=models.find(m=>m.id===x.model_id);return `<span class="size-chip">${esc(m?.model_code||'')} — Size <b>${x.size}</b> × ${x.quantity}</span>`}).join('')}</div>
-      <div class="history-total">Total: $${total.toFixed(2)} &nbsp; • &nbsp; Profit: $${profit.toFixed(2)}</div>
+      <div class="size-chips">
+        ${g.items.map(x=>{
+          const m=models.find(m=>String(m.id)===String(x.model_id));
+          return `<span class="size-chip">
+            ${esc(m?.model_code||'')} — Size <b>${x.size??''}</b> × ${x.quantity}
+          </span>`;
+        }).join('')}
+      </div>
+      <div class="history-total">
+        Total: $${total.toFixed(2)} &nbsp; • &nbsp; Profit: $${profit.toFixed(2)}
+      </div>
     </div>`;
   }).join('');
 }
 async function renderCorrection(){
-  const h=await db.from('stock_corrections').select('id,date,reason,created_at').order('created_at',{ascending:false});
-  if(h.error){corHistory.innerHTML='<div class="empty">Correction history is not available.</div>';return;}
-  const ids=(h.data||[]).map(x=>x.id);
-  if(!ids.length){corHistory.innerHTML='<div class="empty">No corrections yet.</div>';return;}
+  if(!corrections.length){
+    corHistory.innerHTML='<div class="empty">No corrections yet.</div>';
+    return;
+  }
 
-  const d=await db.from('stock_correction_items')
-    .select('stock_correction_id,shoe_size_id,difference').in('stock_correction_id',ids);
-  if(d.error){corHistory.innerHTML='<div class="empty">Correction items could not be loaded.</div>';return;}
+  const groups={};
+  corrections.forEach(x=>{
+    const key=String(x.correction_id);
+    if(!groups[key]){
+      groups[key]={date:x.date||'',reason:x.reason||'',items:[]};
+    }
+    groups[key].items.push(x);
+  });
 
-  corHistory.innerHTML=(h.data||[]).map(h=>{
-    const items=(d.data||[]).filter(i=>i.stock_correction_id===h.id);
-    if(!items.length)return '';
-    return `<div class="history-group">
+  corHistory.innerHTML=Object.values(groups).map(g=>`
+    <div class="history-group">
       <div class="history-head">
-        <div><div class="history-title">🔄 Stock Correction</div>
-        <div class="history-meta">Date: ${esc(h.date)}${h.reason?' • '+esc(h.reason):''}</div></div>
+        <div>
+          <div class="history-title">🔄 Stock Correction</div>
+          <div class="history-meta">
+            Date: ${esc(g.date)}${g.reason?' • '+esc(g.reason):''}
+          </div>
+        </div>
       </div>
-      <div class="size-chips">${items.map(i=>{
-        const sz=sizes.find(z=>z.id===i.shoe_size_id);
-        const m=models.find(z=>z.id===sz?.model_id);
-        const sign=Number(i.difference)>0?'+':'';
-        return `<span class="size-chip">${esc(m?.model_code||'')} — Size <b>${sz?.size??''}</b> ${sign}${i.difference}</span>`;
-      }).join('')}</div>
-    </div>`;
-  }).join('')||'<div class="empty">No corrections yet.</div>';
+      <div class="size-chips">
+        ${g.items.map(i=>{
+          const sz=sizes.find(z=>String(z.id)===String(i.shoe_size_id));
+          const m=models.find(z=>String(z.id)===String(sz?.model_id));
+          const sign=Number(i.difference)>0?'+':'';
+          return `<span class="size-chip">
+            ${esc(m?.model_code||'')} — Size <b>${sz?.size??''}</b> ${sign}${i.difference}
+          </span>`;
+        }).join('')}
+      </div>
+    </div>
+  `).join('');
 }
 
 correctionForm.onsubmit=async e=>{
   e.preventDefault();
-  const model_id=corModel.value, date=corDate.value, reason=corReason.value.trim()||null;
+
+  const model_id=corModel.value;
+  const date=corDate.value;
+  const reason=corReason.value.trim()||null;
   const rows=[...document.querySelectorAll('#corSizes .qty')];
+
   if(!model_id)return alert('Please select a model.');
+  if(!date)return alert('Please select a date.');
 
   try{
     const modelSizes=sizes.filter(x=>String(x.model_id)===String(model_id));
     const items=[];
 
     for(const x of rows){
+      // In the correction screen, the entered number is the NEW physical quantity.
       const newQty=Math.max(0,Number(x.value)||0);
       const oldQty=currentQty(model_id,x.dataset.size);
+
       if(newQty===oldQty)continue;
+
       const sz=modelSizes.find(z=>Number(z.size)===Number(x.dataset.size));
       if(!sz)throw new Error('Could not find Size '+x.dataset.size+' for this model.');
-      items.push({shoe_size_id:sz.id,difference:newQty-oldQty});
+
+      items.push({
+        shoe_size_id:sz.id,
+        old_quantity:oldQty,
+        new_quantity:newQty,
+        difference:newQty-oldQty
+      });
     }
 
     if(!items.length)return alert('No stock change was entered.');
 
-    const head=await db.from('stock_corrections').insert({date,reason}).select().single();
+    // Real column is correction_date, not date.
+    const head=await db.from('stock_corrections').insert({
+      correction_date:date,
+      reason:reason,
+      note:null
+    }).select().single();
+
     if(head.error)throw head.error;
 
     const detail=await db.from('stock_correction_items').insert(
-      items.map(x=>({...x,stock_correction_id:head.data.id}))
+      items.map(x=>({...x,correction_id:head.data.id}))
     );
+
     if(detail.error){
       await db.from('stock_corrections').delete().eq('id',head.data.id);
       throw detail.error;
     }
 
-    msg('Stock correction saved');
+    msg('✅ Stock correction saved');
     e.target.reset();
     corDate.value=today;
+
     await load();
     sizeInputs('corModel');
     renderCorrection();
   }catch(err){
-    console.error(err);
+    console.error('Correction error:',err);
     alert('Correction error:\n\n'+(err.message||err));
   }
 }
+function renderReports(){
+  const purchase=stock.reduce((sum,x)=>{
+    const m=models.find(z=>String(z.id)===String(x.model_id));
+    return sum+(Number(x.current_stock)||0)*(Number(m?.cost_price)||0);
+  },0);
 
-function renderReports(){let purchase=stock.reduce((a,x)=>a+(+x.current_stock||0),0),rev=sales.reduce((a,x)=>a+(+x.total_amount||0),0),profit=sales.reduce((a,x)=>a+(+x.profit||0),0);rPurchase.textContent='$'+purchase.toFixed(2);rRevenue.textContent='$'+rev.toFixed(2);rProfit.textContent='$'+profit.toFixed(2);months.innerHTML='<table><tr><th>Month</th><th>Revenue</th></tr>'+Object.entries(sales.reduce((a,x)=>{let k=(x.date||'').slice(0,7);a[k]=(a[k]||0)+(+x.total_amount||0);return a},{})).map(([k,v])=>`<tr><td>${k}</td><td>$${v.toFixed(2)}</td></tr>`).join('')+'</table>'}
+  const rev=sales.reduce((a,x)=>a+(Number(x.total_amount)||0),0);
+  const profit=sales.reduce((a,x)=>a+(Number(x.profit)||0),0);
+
+  rPurchase.textContent='$'+purchase.toFixed(2);
+  rRevenue.textContent='$'+rev.toFixed(2);
+  rProfit.textContent='$'+profit.toFixed(2);
+
+  const monthly=sales.reduce((a,x)=>{
+    const k=(x.date||'').slice(0,7);
+    if(k)a[k]=(a[k]||0)+(Number(x.total_amount)||0);
+    return a;
+  },{});
+
+  months.innerHTML='<table><tr><th>Month</th><th>Revenue</th></tr>'+
+    Object.entries(monthly)
+      .sort(([a],[b])=>a.localeCompare(b))
+      .map(([k,v])=>`<tr><td>${esc(k)}</td><td>$${v.toFixed(2)}</td></tr>`)
+      .join('')+
+    '</table>';
+}
 function download(name,text,type){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click()}
 function exportJSON(){download('kids-shoe-backup.json',JSON.stringify({models,sizes,stock,sales,corrections},null,2),'application/json')}
 function exportCSV(){let rows=['model_code,model_name,size,quantity'];stock.forEach(x=>{let m=models.find(z=>z.id===x.model_id)||{};rows.push([m.model_code,m.model_name,x.size,x.current_stock].map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(','))});download('inventory.csv',rows.join('\n'),'text/csv')}
