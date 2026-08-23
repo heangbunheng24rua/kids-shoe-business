@@ -39,7 +39,7 @@ table{width:100%;border-collapse:collapse;margin-top:14px}th,td{padding:9px;bord
 .modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:15px;z-index:50}
 .modal.show{display:flex}.modal-card{background:#fff;border-radius:14px;padding:20px;width:min(900px,100%);max-height:92vh;overflow:auto}
 @media(max-width:700px){header{align-items:flex-start;flex-direction:column}main{padding:12px}table{min-width:900px}}
-</style>
+.stock-image-wrap{position:relative;width:72px;height:72px;flex:0 0 72px}.stock-image-wrap img{width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid #ddd;display:block}.stock-image-wrap .stock-model-fallback{position:absolute;inset:0;align-items:center;justify-content:center;border:1px solid #ddd;border-radius:10px;background:#f8fafc;font-size:28px}</style>
 </head>
 <body>
 <header><div><h1>👟 Little Steps — Shoe Business Manager</h1><small>Cloud inventory • phone + computer</small></div><div id="status" class="status">Connecting...</div></header>
@@ -167,7 +167,7 @@ function initialCreateStockRows(){return [...document.querySelectorAll('#createS
 function updateCreateInitialTotal(){const total=initialCreateStockRows().reduce((a,x)=>a+x.quantity,0);const el=document.getElementById('createInitialTotal');if(el)el.textContent=total;}
 function checked(id){return [...document.querySelectorAll('#'+id+' input:checked')].map(x=>+x.value)}
 function ms(id){return sizes.filter(x=>x.model_id===id).map(x=>+x.size).sort((a,b)=>a-b)}
-function modelStockSummary(id){return ms(id).map(n=>{const r=stock.find(x=>String(x.model_id)===String(id)&&Number(x.size)===Number(n));return `${n}: ${Number(r?.current_stock ?? r?.quantity ?? 0)}`}).join(', ')}
+function modelStockSummary(id){return ms(id).map(n=>{const r=stock.find(x=>String(x.model_id)===String(id)&&Number(x.size)===Number(n));return `${n}: ${Number(r?.current_stock ?? 0)}`}).join(', ')}
 function setStatus(t,good){let x=document.getElementById('status');x.textContent=t;x.className='status '+(good?'ok':'bad')}
 
 async function load(){
@@ -195,11 +195,10 @@ function currentQty(modelId,size){return Number(stock.find(x=>x.model_id===model
 function stockImageHtml(url,cls='stock-model-img'){
   const src=imageSrc(url);
   if(!src)return '<div class="stock-model-fallback">👟</div>';
-  return `<div style="position:relative;width:72px;height:72px;flex:0 0 72px">
+  return `<div class="stock-image-wrap">
     <img class="${cls}" src="${esc(src)}" alt="Shoe image"
-      style="width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid #ddd;display:block"
       onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-    <div class="stock-model-fallback" style="display:none;position:absolute;inset:0">👟</div>
+    <div class="stock-model-fallback" style="display:none">👟</div>
   </div>`;
 }
 function renderStockCards(){
@@ -505,8 +504,85 @@ editForm.onsubmit=async e=>{
   closeEdit();msg('Model updated');await load();
 }
 function closeEdit(){editModal.classList.remove('show')}
-async function copyModel(id){let m=models.find(x=>x.id===id),c=prompt('New model code',m.model_code+'-COPY');if(!c)return;let n=prompt('New model name',m.model_name+' Copy');if(!n)return;let r=await db.from('shoe_models').insert({model_code:c,model_name:n,color:m.color,cost_price:m.cost_price,selling_price:m.selling_price,minimum_stock:m.minimum_stock,image_url:m.image_url}).select().single();if(r.error)return alert(r.error.message);await db.from('shoe_sizes').insert(ms(id).map(size=>({model_id:r.data.id,size})));msg('Model copied');await load()}
-async function delModel(id){if(!confirm('Delete this model and its sizes?'))return;let r=await db.from('shoe_models').delete().eq('id',id);if(r.error)return alert(r.error.message);msg('Model deleted');await load()}
+async function copyModel(id){
+  const m=models.find(x=>String(x.id)===String(id));
+  if(!m)return;
+  const c=prompt('New model code',m.model_code+'-COPY'); if(!c)return;
+  const n=prompt('New model name',m.model_name+' Copy'); if(!n)return;
+
+  try{
+    const r=await db.from('shoe_models').insert({
+      model_code:c.trim(),model_name:n.trim(),color:m.color,
+      cost_price:m.cost_price,selling_price:m.selling_price,
+      minimum_stock:m.minimum_stock,image_url:m.image_url
+    }).select().single();
+    if(r.error)throw r.error;
+
+    const ns=ms(id).map(size=>({model_id:r.data.id,size}));
+    if(ns.length){
+      const sr=await db.from('shoe_sizes').insert(ns);
+      if(sr.error){
+        await db.from('shoe_models').delete().eq('id',r.data.id);
+        throw sr.error;
+      }
+    }
+    msg('Model copied');
+    await load();
+  }catch(err){alert('Copy model error:\n\n'+(err.message||err));}
+}
+
+async function delModel(id){
+  if(!confirm('Delete this model, its sizes and ALL transaction history for those sizes?'))return;
+
+  try{
+    const sizeIds=sizes.filter(x=>String(x.model_id)===String(id)).map(x=>x.id);
+    if(sizeIds.length){
+      const [si,sa,co]=await Promise.all([
+        db.from('stock_in_items').select('stock_in_id').in('shoe_size_id',sizeIds),
+        db.from('sale_items').select('sale_id').in('shoe_size_id',sizeIds),
+        db.from('stock_correction_items').select('stock_correction_id').in('shoe_size_id',sizeIds)
+      ]);
+      if(si.error)throw si.error;
+      if(sa.error)throw sa.error;
+      if(co.error)throw co.error;
+
+      const stockInIds=[...new Set((si.data||[]).map(x=>x.stock_in_id))];
+      const saleIds=[...new Set((sa.data||[]).map(x=>x.sale_id))];
+      const correctionIds=[...new Set((co.data||[]).map(x=>x.stock_correction_id))];
+
+      if(stockInIds.length){
+        let r=await db.from('stock_in_items').delete().in('stock_in_id',stockInIds);
+        if(r.error)throw r.error;
+        r=await db.from('stock_in').delete().in('id',stockInIds);
+        if(r.error)throw r.error;
+      }
+      if(saleIds.length){
+        let r=await db.from('sale_items').delete().in('sale_id',saleIds);
+        if(r.error)throw r.error;
+        r=await db.from('sales').delete().in('id',saleIds);
+        if(r.error)throw r.error;
+      }
+      if(correctionIds.length){
+        let r=await db.from('stock_correction_items').delete().in('stock_correction_id',correctionIds);
+        if(r.error)throw r.error;
+        r=await db.from('stock_corrections').delete().in('id',correctionIds);
+        if(r.error)throw r.error;
+      }
+
+      const sz=await db.from('shoe_sizes').delete().in('id',sizeIds);
+      if(sz.error)throw sz.error;
+    }
+
+    const r=await db.from('shoe_models').delete().eq('id',id);
+    if(r.error)throw r.error;
+    msg('Model deleted');
+    await load();
+  }catch(err){
+    console.error(err);
+    alert('Could not delete this model:\n\n'+(err.message||err));
+  }
+}
+
 function manageSizes(id){editModel(id)}
 async function addStockIn(date,supplierValue,referenceValue,rows){
   const head=await db.from('stock_in').insert({
@@ -611,53 +687,52 @@ async function saveModelStock(model_id){
 
 saleForm.onsubmit=async e=>{
   e.preventDefault();
-
-  const model_id=saleModel.value;
-  const date=saleDate.value;
-  const rows=[...document.querySelectorAll('#saleSizes .qty')].filter(x=>+x.value>0);
+  const model_id=saleModel.value, date=saleDate.value;
+  const rows=[...document.querySelectorAll('#saleSizes .qty')].filter(x=>Number(x.value)>0);
   const m=models.find(x=>String(x.id)===String(model_id));
-
-  if(!rows.length)return alert('Enter quantity');
+  if(!model_id)return alert('Please select a model.');
+  if(!rows.length)return alert('Enter quantity for at least one size.');
 
   for(const x of rows){
-    const old=stock.find(y=>String(y.model_id)===String(model_id)&&Number(y.size)===Number(x.dataset.size));
-    const qty=Number(x.value);
-
-    if(!old || currentQty(model_id,x.dataset.size)<qty){
-      return alert('Not enough stock for size '+x.dataset.size);
-    }
-
-    let r=await db.from('current_stock')
-      .update({current_stock:currentQty(model_id,x.dataset.size)-qty})
-      .eq('id',old.id);
-
-    if(r.error){
-      r=await db.from('current_stock')
-        .update({quantity:currentQty(model_id,x.dataset.size)-qty})
-        .eq('id',old.id);
-    }
-
-    if(r.error)return alert(r.error.message);
+    const available=currentQty(model_id,x.dataset.size), qty=Number(x.value);
+    if(available<qty)return alert('Not enough stock for size '+x.dataset.size+'. Current stock: '+available);
   }
 
-  const ins=await db.from('sales').insert(rows.map(x=>({
-    model_id,
-    size:+x.dataset.size,
-    quantity:+x.value,
-    date,
-    customer:customer.value,
-    payment:payment.value,
-    total_amount:(+x.value)*(+m.selling_price||0),
-    profit:(+x.value)*((+m.selling_price||0)-(+m.cost_price||0))
-  })));
+  const total_amount=rows.reduce((a,x)=>a+Number(x.value)*(Number(m?.selling_price)||0),0);
+  const profit=rows.reduce((a,x)=>a+Number(x.value)*((Number(m?.selling_price)||0)-(Number(m?.cost_price)||0)),0);
 
-  if(ins.error)return alert(ins.error.message);
+  try{
+    const head=await db.from('sales').insert({
+      date,
+      customer:customer.value.trim()||null,
+      payment:payment.value,
+      total_amount,
+      profit
+    }).select().single();
+    if(head.error)throw head.error;
 
-  msg('Sale saved');
-  e.target.reset();
-  saleDate.value=today;
-  await load();
-  sizeInputs('saleModel');
+    const modelSizes=sizes.filter(x=>String(x.model_id)===String(model_id));
+    const items=rows.map(x=>{
+      const sz=modelSizes.find(z=>Number(z.size)===Number(x.dataset.size));
+      if(!sz)throw new Error('Could not find Size '+x.dataset.size+' for this model.');
+      return {sale_id:head.data.id,shoe_size_id:sz.id,quantity:Number(x.value)};
+    });
+
+    const detail=await db.from('sale_items').insert(items);
+    if(detail.error){
+      await db.from('sales').delete().eq('id',head.data.id);
+      throw detail.error;
+    }
+
+    msg('Sale saved');
+    e.target.reset();
+    saleDate.value=today;
+    await load();
+    sizeInputs('saleModel');
+  }catch(err){
+    console.error(err);
+    alert('Sale error:\n\n'+(err.message||err));
+  }
 }
 
 async function renderStock(){
@@ -705,58 +780,76 @@ async function renderSales(){
     </div>`;
   }).join('');
 }
-async function renderCorrection(){let r=await db.from('stock_corrections').select('*').order('created_at',{ascending:false});if(r.error)return corHistory.innerHTML='<div class="empty">Correction history table is not available yet.</div>';corHistory.innerHTML='<table><tr><th>Date</th><th>Model</th><th>Size</th><th>New Qty</th><th>Reason</th></tr>'+r.data.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(models.find(m=>m.id===x.model_id)?.model_code||x.model_id)}</td><td>${x.size}</td><td>${x.quantity}</td><td>${esc(x.reason)}</td></tr>`).join('')+'</table>'}
+async function renderCorrection(){
+  const h=await db.from('stock_corrections').select('id,date,reason,created_at').order('created_at',{ascending:false});
+  if(h.error){corHistory.innerHTML='<div class="empty">Correction history is not available.</div>';return;}
+  const ids=(h.data||[]).map(x=>x.id);
+  if(!ids.length){corHistory.innerHTML='<div class="empty">No corrections yet.</div>';return;}
+
+  const d=await db.from('stock_correction_items')
+    .select('stock_correction_id,shoe_size_id,difference').in('stock_correction_id',ids);
+  if(d.error){corHistory.innerHTML='<div class="empty">Correction items could not be loaded.</div>';return;}
+
+  corHistory.innerHTML=(h.data||[]).map(h=>{
+    const items=(d.data||[]).filter(i=>i.stock_correction_id===h.id);
+    if(!items.length)return '';
+    return `<div class="history-group">
+      <div class="history-head">
+        <div><div class="history-title">🔄 Stock Correction</div>
+        <div class="history-meta">Date: ${esc(h.date)}${h.reason?' • '+esc(h.reason):''}</div></div>
+      </div>
+      <div class="size-chips">${items.map(i=>{
+        const sz=sizes.find(z=>z.id===i.shoe_size_id);
+        const m=models.find(z=>z.id===sz?.model_id);
+        const sign=Number(i.difference)>0?'+':'';
+        return `<span class="size-chip">${esc(m?.model_code||'')} — Size <b>${sz?.size??''}</b> ${sign}${i.difference}</span>`;
+      }).join('')}</div>
+    </div>`;
+  }).join('')||'<div class="empty">No corrections yet.</div>';
+}
+
 correctionForm.onsubmit=async e=>{
   e.preventDefault();
-
-  const model_id=corModel.value;
+  const model_id=corModel.value, date=corDate.value, reason=corReason.value.trim()||null;
   const rows=[...document.querySelectorAll('#corSizes .qty')];
-  const reason=corReason.value;
-  const date=corDate.value;
+  if(!model_id)return alert('Please select a model.');
 
-  for(const x of rows){
-    const n=Number(x.value);
-    const old=stock.find(y=>String(y.model_id)===String(model_id)&&Number(y.size)===Number(x.dataset.size));
+  try{
+    const modelSizes=sizes.filter(x=>String(x.model_id)===String(model_id));
+    const items=[];
 
-    if(old){
-      let r=await db.from('current_stock')
-        .update({current_stock:n})
-        .eq('id',old.id);
-
-      if(r.error){
-        r=await db.from('current_stock')
-          .update({quantity:n})
-          .eq('id',old.id);
-      }
-
-      if(r.error)return alert(r.error.message);
-
-    }else if(n>0){
-      let r=await db.from('current_stock')
-        .insert({model_id,size:+x.dataset.size,current_stock:n});
-
-      if(r.error){
-        r=await db.from('current_stock')
-          .insert({model_id,size:+x.dataset.size,quantity:n});
-      }
-
-      if(r.error)return alert(r.error.message);
+    for(const x of rows){
+      const newQty=Math.max(0,Number(x.value)||0);
+      const oldQty=currentQty(model_id,x.dataset.size);
+      if(newQty===oldQty)continue;
+      const sz=modelSizes.find(z=>Number(z.size)===Number(x.dataset.size));
+      if(!sz)throw new Error('Could not find Size '+x.dataset.size+' for this model.');
+      items.push({shoe_size_id:sz.id,difference:newQty-oldQty});
     }
 
-    const h=await db.from('stock_corrections').insert({
-      model_id,
-      size:+x.dataset.size,
-      quantity:n,
-      date,
-      reason
-    });
+    if(!items.length)return alert('No stock change was entered.');
 
-    if(h.error)console.warn(h.error);
+    const head=await db.from('stock_corrections').insert({date,reason}).select().single();
+    if(head.error)throw head.error;
+
+    const detail=await db.from('stock_correction_items').insert(
+      items.map(x=>({...x,stock_correction_id:head.data.id}))
+    );
+    if(detail.error){
+      await db.from('stock_corrections').delete().eq('id',head.data.id);
+      throw detail.error;
+    }
+
+    msg('Stock correction saved');
+    e.target.reset();
+    corDate.value=today;
+    await load();
+    sizeInputs('corModel');
+    renderCorrection();
+  }catch(err){
+    console.error(err);
+    alert('Correction error:\n\n'+(err.message||err));
   }
-
-  msg('Correction saved');
-  await load();
-  sizeInputs('corModel');
 }
 
 function renderReports(){let purchase=stock.reduce((a,x)=>a+(+x.current_stock||0),0),rev=sales.reduce((a,x)=>a+(+x.total_amount||0),0),profit=sales.reduce((a,x)=>a+(+x.profit||0),0);rPurchase.textContent='$'+purchase.toFixed(2);rRevenue.textContent='$'+rev.toFixed(2);rProfit.textContent='$'+profit.toFixed(2);months.innerHTML='<table><tr><th>Month</th><th>Revenue</th></tr>'+Object.entries(sales.reduce((a,x)=>{let k=(x.date||'').slice(0,7);a[k]=(a[k]||0)+(+x.total_amount||0);return a},{})).map(([k,v])=>`<tr><td>${k}</td><td>$${v.toFixed(2)}</td></tr>`).join('')+'</table>'}
