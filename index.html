@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="ksb-build" content="FIXED-V3-NO-CUSTOMER">
 <title>Little Steps — Shoe Business Manager</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -42,6 +43,7 @@ table{width:100%;border-collapse:collapse;margin-top:14px}th,td{padding:9px;bord
 .stock-image-wrap{position:relative;width:72px;height:72px;flex:0 0 72px}.stock-image-wrap img{width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid #ddd;display:block}.stock-image-wrap .stock-model-fallback{position:absolute;inset:0;align-items:center;justify-content:center;border:1px solid #ddd;border-radius:10px;background:#f8fafc;font-size:28px}</style>
 </head>
 <body>
+<div style="background:#dcfce7;color:#166534;text-align:center;padding:6px;font-weight:700">Kids Shoe Manager — FIXED V3</div>
 <header><div><h1>👟 Little Steps — Shoe Business Manager</h1><small>Cloud inventory • phone + computer</small></div><div id="status" class="status">Connecting...</div></header>
 <nav>
 <button class="active" onclick="page('dashboard',this)">Dashboard</button>
@@ -108,7 +110,7 @@ table{width:100%;border-collapse:collapse;margin-top:14px}th,td{padding:9px;bord
 
 <section id="sales" class="page">
 <div class="panel"><h2>🛒 Stock Out / Sale</h2>
-<form id="saleForm"><label>Model<select id="saleModel" required></select></label><label>Date<input id="saleDate" type="date" required></label><label>Customer<input id="customer"></label><label>Payment<select id="payment"><option>Cash</option><option>Transfer</option><option>Credit</option></select></label>
+<form id="saleForm"><label>Model<select id="saleModel" required></select></label><label>Date<input id="saleDate" type="date" required></label><label>Payment<select id="payment"><option>Cash</option><option>Transfer</option><option>Credit</option></select></label>
 <div style="grid-column:1/-1"><div id="saleSizes" class="size-grid"></div></div><button class="primary">Save Sale</button></form></div>
 <div class="panel"><h2>Sales History</h2><div id="salesHistory"></div></div>
 </section>
